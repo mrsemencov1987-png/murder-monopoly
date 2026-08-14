@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MURDER MONOPOLY — MamPap&Alica © 2026</title>
+<!-- MURDER MONOPOLY · Специально для канала MamPap&Alica · © 2026
+     КАРТИНКИ: img/cells/, img/icons/, img/cards/, img/tokens/, img/logo.png, фоны ❖/.
+     ЗВУКИ: snd/* (card_<колода>_<номер>.*, card_<колода>.*, start, roof, crime, police, tunnel, shop, meet, hover, dice, buy, music_1..6). -->
+<style>
+:root{--gold:#d4af37;--bg:#0b1020}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#eee;font-family:'Segoe UI',sans-serif;overflow-x:hidden;background-size:cover;background-position:center;background-attachment:fixed}
+body::before,body::after{content:'';position:fixed;width:60vw;height:60vw;border-radius:50%;filter:blur(80px);opacity:.22;z-index:-1;animation:drift 26s infinite alternate}
+body::before{background:#3949ab;top:-20vw;left:-20vw}
+body::after{background:#6a1b9a;bottom:-20vw;right:-20vw;animation-delay:-13s}
+@keyframes drift{to{transform:translate(15vw,10vh) scale(1.2)}}
+header{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:2px solid var(--gold);background:#0d1226dd;flex-wrap:wrap}
+.logo{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe08a,var(--gold) 60%,#8a6d1f);display:flex;align-items:center;justify-content:center;font-weight:900;color:#5a4300;font-size:18px;box-shadow:0 0 14px #d4af3788}
+h1{font-size:20px;margin:0;letter-spacing:2px;color:var(--gold)}
+.brand{display:flex;align-items:center;gap:7px;color:var(--gold);font-size:12px;margin-left:auto}
+.brand b{letter-spacing:1px}
+.brand i{font-style:normal;opacity:.75}
+.brand .corp{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--gold),#8a6d1f);color:#241a00;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;box-shadow:0 0 8px #d4af3788}
+.brand img{width:26px;height:26px;border-radius:50%;object-fit:contain;box-shadow:0 0 8px #d4af3788}
+.hbtn{background:rgba(16,22,46,.55);border:1px solid rgba(212,175,55,.35);color:var(--gold);backdrop-filter:blur(8px);border-radius:10px;padding:6px 11px;font-size:14px;font-weight:700;letter-spacing:1px;box-shadow:0 2px 10px #0006;transition:all .2s}
+.hbtn:hover{background:rgba(212,175,55,.16);border-color:var(--gold);box-shadow:0 0 12px #d4af3755;filter:none}
+input[type=range]{accent-color:var(--gold);width:85px;height:20px;cursor:pointer}
+textarea{width:100%;height:90px;background:#0d1226;color:#eee;border:1px solid #445;border-radius:8px;font-size:11px}
+#setup{max-width:680px;margin:5vh auto;text-align:center;padding:24px;border:2px solid var(--gold);border-radius:16px;background:#11162eee}
+button{background:linear-gradient(180deg,#ffe08a,var(--gold));border:0;border-radius:8px;padding:10px 18px;font-weight:700;color:#3d2f00;cursor:pointer}
+button:hover{filter:brightness(1.1)}
+button:disabled{opacity:.4;cursor:default}
+select,input{padding:7px;border-radius:8px;border:1px solid #445;background:#0d1226;color:#eee}
+.tokrow{display:flex;align-items:center;gap:10px;justify-content:center;margin:8px 0;font-size:14px}
+.tokprev{width:104px;height:104px;border-radius:50%;border:3px solid var(--gold);display:inline-flex;align-items:center;justify-content:center;background:#0d1226;flex:0 0 104px;transition:transform .18s;position:relative;overflow:visible}
+.tokrow .tokprev:hover{transform:scale(1.6);z-index:30;box-shadow:0 8px 24px #000e,0 0 18px var(--gold)}
+.tokprev img{width:100%;height:100%;object-fit:contain;border-radius:50%}
+.tokbtn{padding:6px 11px;font-size:14px}
+main{display:grid;grid-template-columns:minmax(300px,700px) 400px;gap:24px;padding:14px;justify-content:center;align-items:start}
+@media(max-width:1150px){main{grid-template-columns:min(94vw,700px)}aside{max-width:700px;width:100%}}
+.colL{display:flex;flex-direction:column;gap:12px;min-width:0}
+#log{height:110px;overflow:auto;font-size:12px;background:#0d1226cc;border:1px solid rgba(212,175,55,.35);border-radius:12px;padding:6px 12px;width:100%;max-width:700px;margin:0 auto;text-align:center;backdrop-filter:blur(6px)}
+#log div{margin:2px 0}
+#boardWrap{perspective:2000px;max-width:100%;position:relative}
+#boardWrap::before{content:'';position:absolute;inset:-16px;z-index:-1;border-radius:26px;background:linear-gradient(120deg,#ff004c,#ff8a00,#ffe600,#00ff88,#00cfff,#7b2dff,#ff004c);background-size:400% 400%;filter:blur(26px);opacity:.55;animation:fieldGlow 10s ease-in-out infinite}
+@keyframes fieldGlow{0%{background-position:0% 50%;filter:blur(26px)}50%{background-position:100% 50%;filter:blur(34px);opacity:.8}100%{background-position:0% 50%;filter:blur(26px)}}
+#board{display:grid;grid-template:repeat(9,1fr)/repeat(9,1fr);gap:2px;width:100%;max-width:700px;aspect-ratio:1;background:#11162e;padding:6px;border:2px solid var(--gold);border-radius:12px;box-shadow:0 30px 60px #000c;transform:rotateX(20deg);transition:transform .6s}
+#board.flat{transform:none}
+.cell{border-radius:4px;font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2px;color:#101324;position:relative;line-height:1.15;transition:filter .15s;overflow:hidden}
+.cell:hover{filter:brightness(1.35);box-shadow:0 0 12px #ffffffaa;z-index:3;cursor:pointer}
+.cell.here{outline:3px solid var(--gold);outline-offset:-3px;z-index:2}
+.cell.skin{padding-top:11px}
+.cellimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:4px;z-index:0;pointer-events:none}
+.own{position:absolute;left:0;right:0;bottom:0;height:5px;z-index:2;border-radius:0 0 4px 4px;box-shadow:0 0 8px currentColor}
+.blk{position:absolute;top:0;left:0;right:0;font-size:7px;font-weight:800;letter-spacing:.3px;color:#fff;text-shadow:0 1px 2px #000;padding:1px 0;text-align:center;background:rgba(0,0,0,.45);border-bottom:1px solid #0008;border-radius:4px 4px 0 0;z-index:1}
+.side{position:absolute;top:0;right:0;bottom:0;width:27%;max-width:36px;background:linear-gradient(180deg,rgba(0,0,0,.78),rgba(0,0,0,.55));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:2px 1px;z-index:1;border-radius:0 4px 4px 0}
+.side .nm{font-size:7px;line-height:1.15;text-align:center;word-break:break-word}
+.side .pr{font-weight:800;font-size:10px;color:var(--gold)}
+.center{grid-row:2/9;grid-column:2/9;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:14px 10px 10px;background:radial-gradient(circle,#1a2340cc 0%,#10162ecc 70%);border-radius:8px;overflow:hidden;position:relative}
+.center>*{position:relative;z-index:1}
+.center>.cbg{position:absolute;inset:0;z-index:0;border-radius:8px;overflow:hidden}
+.cbg img,.cbg video{width:100%;height:100%;object-fit:cover;opacity:.9}
+.cbg::after{content:'';position:absolute;inset:0;background:rgba(10,14,30,.35)}
+.centerimg{max-width:60%;max-height:26%;object-fit:contain;border-radius:12px;box-shadow:0 0 22px #d4af3766}
+.stacks{display:flex;gap:12px;justify-content:center;align-items:flex-end;margin-top:auto;margin-bottom:2px}
+.stack{width:78px;aspect-ratio:44/63;background:linear-gradient(160deg,#233058,#141a35);border:2px solid var(--gold);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font-size:26px;box-shadow:0 3px 0 #0d1226,0 6px 0 #0d1226,0 10px 18px #000d;transition:transform .15s;background-size:cover;background-position:center}
+.stack:hover{transform:translateY(-7px) scale(1.07)}
+.stack span{font-size:8px;font-weight:800;letter-spacing:.4px;color:#dfe6ff}
+.stack.custom span{display:none}
+.toks{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap;z-index:2;pointer-events:none}
+.tok{width:34px;height:34px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 12px currentColor}
+.tokimg{width:78px;height:78px;max-width:95%;display:inline-flex;filter:drop-shadow(0 0 8px var(--glow)) drop-shadow(0 0 3px var(--glow))}
+.tokimg img{width:100%;height:100%;object-fit:contain}
+aside{width:100%;max-width:400px;position:relative;z-index:6;display:flex;flex-direction:column;gap:10px}
+.susNote{border:1px solid var(--gold);background:linear-gradient(90deg,rgba(198,40,40,.25),rgba(16,22,46,.6));border-radius:10px;padding:7px 10px;font-size:12px;text-align:center;color:#ffd54f;font-weight:700}
+.pl{border:1px solid #333;border-left:6px solid;border-radius:12px;padding:10px 12px;background:#10162ef5;font-size:13px}
+.pl.cur{box-shadow:0 0 14px #d4af3766;border-color:var(--gold)}
+.pl .chips button{font-size:12px;padding:5px 8px;margin:2px;border-radius:6px}
+.susBadge{display:inline-block;min-width:40px;text-align:center;padding:2px 9px;border-radius:14px;font-weight:900;font-size:14px;color:#fff;box-shadow:0 0 10px currentColor;vertical-align:middle}
+.susBadge.hot{animation:susPulse 1s infinite}
+@keyframes susPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.susBar{height:6px;border-radius:3px;background:#22305288;overflow:hidden;margin:4px 0}
+.susBar>span{display:block;height:100%;border-radius:3px;transition:width .4s}
+.skrow{display:inline-flex;flex-wrap:wrap;gap:3px;margin:3px 0;vertical-align:middle}
+.sk{width:28px;height:39px;border-radius:4px;border:2px solid var(--gold);display:inline-flex;align-items:center;justify-content:center;font-size:14px;background:#1a2340;overflow:hidden;cursor:pointer;transition:transform .15s}
+.sk:hover{transform:scale(1.15);z-index:5}
+.sk img{width:100%;height:100%;object-fit:cover}
+.sk.back{background:repeating-linear-gradient(45deg,#233058,#233058 4px,#141a35 4px,#141a35 8px);color:var(--gold);font-size:8px;font-weight:800;cursor:default}
+#dice{font-size:44px;line-height:1}
+.overlay{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:50}
+.card{background:#141a35;border:2px solid var(--gold);border-radius:14px;padding:18px;max-width:560px;width:94%;text-align:center;box-shadow:0 0 40px #000;max-height:94vh;overflow:auto}
+.card h2{color:var(--gold);margin:6px 0}
+.rar{font-weight:800;letter-spacing:1px}
+#preview{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:60;opacity:0;transition:opacity .15s}
+#preview.on{opacity:1}
+#preview .pv{height:min(92vh,520px);aspect-ratio:44/63;max-width:90vw;background:rgba(20,26,53,.97);border:2px solid var(--gold);border-radius:16px;padding:10px;text-align:center;box-shadow:0 12px 40px #000d,0 0 34px #d4af3755;transform:scale(.4) rotate(-8deg);transition:transform .28s cubic-bezier(.2,1.7,.4,1);position:relative;overflow:hidden;display:flex;flex-direction:column}
+#preview.on .pv{transform:scale(1) rotate(0deg)}
+#preview .pv::after{content:'';position:absolute;top:-60%;left:-80%;width:50%;height:220%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:rotate(20deg);animation:pvshine 1.6s .1s ease infinite;pointer-events:none}
+@keyframes pvshine{0%{left:-80%}60%,100%{left:130%}}
+.pv .rar{font-size:9px;font-weight:800;letter-spacing:1px;color:#fff;text-shadow:0 1px 2px #000;display:inline-block;padding:2px 10px;border-radius:20px;margin-bottom:4px}
+.pv h3{margin:1px 0 5px;font-size:14px;color:#fff;letter-spacing:1px}
+.pv .imgw{flex:1;min-height:70px;border-radius:10px;border:1px solid #d4af3766;background:#0d1226;display:flex;align-items:center;justify-content:center;font-size:44px;overflow:hidden;margin-bottom:5px}
+.pv .imgw img{width:100%;height:100%;object-fit:cover;animation:pvin .35s ease}
+@keyframes pvin{from{transform:scale(1.25);opacity:0}to{transform:scale(1);opacity:1}}
+.pv .row{font-size:9.5px;color:#dfe6ff;margin:2px 0}
+.pv .row b{color:var(--gold)}
+.vcard{height:min(78vh,470px);aspect-ratio:44/63;max-width:88vw;margin:0 auto;background:#0d1226;border:2px solid var(--gold);border-radius:14px;padding:12px;text-align:center;overflow:hidden;display:flex;flex-direction:column}
+.vcard .rar{display:inline-block;padding:3px 14px;border-radius:20px;color:#fff;margin-bottom:6px;font-size:11px}
+.vimg{height:30%;min-height:90px;border-radius:10px;border:1px solid #d4af3766;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#0d1226;font-size:40px;margin-bottom:6px}
+.vimg img{width:100%;height:100%;object-fit:cover;animation:pvin .35s ease}
+.vtext{flex:1;display:flex;align-items:center;justify-content:center;font-size:clamp(11px,2.1vh,15px);margin:6px 0;color:#fff;line-height:1.45}
+.veff{font-size:11px;color:var(--gold);font-weight:700;margin-bottom:10px}
+.shopgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.scard{border:2px solid #445;border-radius:8px;padding:8px 4px;background:#10162e;text-align:center;font-size:10px;position:relative;aspect-ratio:3/4;display:flex;flex-direction:column;justify-content:space-between}
+.scard .num{position:absolute;top:-9px;left:-9px;background:var(--gold);border-radius:50%;width:20px;height:20px;line-height:20px;font-weight:800;color:#3d2f00;z-index:1}
+.scard.win{border-color:var(--gold);box-shadow:0 0 16px #d4af37aa}
+</style>
+</head>
+<body>
+<div id="setup">
+ <div class="brand" style="justify-content:center;margin:0 0 8px"><span class="corp">®</span><span id="logoSetup"></span><b>MamPap&Alica</b><i>© 2026</i></div>
+ <div class="logo" style="margin:0 auto 10px;width:70px;height:70px;font-size:26px">MM</div>
+ <h1>MURDER MONOPOLY</h1>
+ <p>Детективная монополия: покупай скины, собирай сеты, вешай подозрения и раскрой Убийцу.<br><small>Специально для канала <b style="color:var(--gold)">MamPap&Alica</b> · 2026</small></p>
+ <label>Игроков: <select id="pn" onchange="buildNames()"><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></label>
+ <div id="names" style="margin:10px 0"></div>
+ <div id="toksel" style="margin:8px 0"></div>
+ <label style="font-size:12px"><input type="checkbox" id="qr"> 📱 Раздать роли через QR-коды (нужен интернет)</label><br>
+ <label style="font-size:12px"><input type="checkbox" id="net"> 🌐 Игра по сети (коды хода — передаются в чате)</label><br><br>
+ <button onclick="startGame()">🎲 Начать игру</button>
+</div>
+<div id="game" style="display:none">
+ <header><div class="logo">MM</div><h1>MURDER MONOPOLY</h1><span id="round"></span><span id="cur"></span>
+ <button id="view" class="hbtn" onclick="toggleView()">🎥</button>
+ <span style="display:flex;gap:5px;align-items:center">
+ <button class="hbtn" onclick="musicPrev()" title="Предыдущий трек">«</button>
+ <button id="mpause" class="hbtn" onclick="musicPause()" title="Пауза / играть">❚❚</button>
+ <button class="hbtn" onclick="musicNext()" title="Следующий трек">»</button>
+ <input type="range" id="mrange" min="0" max="100" value="20" oninput="setMusicVol(+this.value)" title="Громкость музыки">
+ <span id="mvol" style="color:var(--gold);font-size:12px;min-width:36px">20%</span>
+ <button class="hbtn" onclick="document.getElementById('bgfile').click()" title="Фон ЦЕНТРА — несколько файлов, циклично">❖</button>
+ <input type="file" id="bgfile" accept="image/*,video/*" multiple style="display:none" onchange="playCenterList(this.files)">
+ <button class="hbtn" onclick="document.getElementById('pgfile').click()" title="Фон ВОКРУГ поля — несколько файлов, циклично">🖼</button>
+ <input type="file" id="pgfile" accept="image/*" multiple style="display:none" onchange="applyPageList(this.files)">
+ <button class="hbtn" onclick="exportCode()" title="📤 Код хода — отправить следующему игроку (игра по сети)">📤</button>
+ <button class="hbtn" onclick="importCode()" title="📥 Принять код хода">📥</button>
+ </span>
+ <div class="brand"><span class="corp">®</span><span id="logoHead"></span><b>MamPap&Alica</b><i>© 2026</i></div>
+ </header>
+ <main>
+  <div class="colL">
+   <div id="log"></div>
+   <div id="boardWrap"><div id="board"></div></div>
+  </div>
+  <aside>
+   <div class="susNote">🚨 ПОДОЗРЕНИЯ — сердце игры! 15 на Убийце = победа детективов. 15 на Шерифе = дискредитация!</div>
+   <div style="text-align:center"><div id="dice">🎲</div>
+    <button id="roll" onclick="roll()">Бросить кубик</button>
+    <button id="acc" onclick="accuseOpen()" title="Обвинить игрока в убийстве">🚔 Обвинить</button>
+    <button id="end" onclick="endTurn()" disabled>Завершить ход</button></div>
+   <div id="players"></div>
+  </aside></main>
+</div>
+<div id="preview"><div class="pv"></div></div>
+<div id="ov" class="overlay" style="display:none"></div>
+<script>
+const $=s=>document.querySelector(s), sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const PCOL=['#ff5252','#4fc3f7','#aed581','#ffd54f','#ff8a65','#b39ddb'];
+const RLBL={sheriff:'🚔 ШЕРИФ',murderer:'🔪 УБИЙЦА',civilian:'😇 НЕВИННЫЙ'};
+const BRAND='MamPap&Alica © 2026';
+const EXT=['png','jpg','jpeg','gif','webp'];
+const IMG_CACHE={};
+let OWN={};
+function loadImg(path,ok){let i=0;(function next(){if(i>=EXT.length)return ok(null);const im=new Image();im.onload=()=>ok(path+'.'+EXT[i]);im.onerror=()=>{i++;next();};im.src=path+'.'+EXT[i];})();}
+function loadImgAny(paths,ok){let p=0;(function next(){if(p>=paths.length)return ok(null);loadImg(paths[p],u=>{if(u)ok(u);else{p++;next();}});})();}
+loadImgAny(['img/logo','img/icons/logo'],u=>{['logoSetup','logoHead'].forEach(id=>{const el=document.getElementById(id);if(el&&u)el.innerHTML=`<img src="${u}">`;});});
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+const SLUG={start:'start',coin:'moneta',roof:'krysha',crime:'prestuplenie',police:'police',tunnel:'tunnel',stash:'stash',shop:'shop'};
+const SNDEXT=['mp3','wav','ogg'],SND_CACHE={};
+function probeSnd(n,cb){ if(SND_CACHE[n]!==undefined)return cb(SND_CACHE[n]); let i=0;(function next(){ if(i>=SNDEXT.length){SND_CACHE[n]=null;return cb(null);} const a=new Audio('snd/'+n+'.'+SNDEXT[i]); a.oncanplay=()=>{SND_CACHE[n]='snd/'+n+'.'+SNDEXT[i];cb(SND_CACHE[n]);}; a.onerror=()=>{i++;next();}; a.load(); })(); }
+function playSnd(n,maxMs){ const run=u=>{const a=new Audio(u); if(maxMs)setTimeout(()=>{try{a.pause();}catch(e){}},maxMs); a.play().catch(()=>{});};
+ if(SND_CACHE[n])run(SND_CACHE[n]); else probeSnd(n,u=>{if(u)run(u);}); }
+function playSndFallback(n,fb){ if(SND_CACHE[n]){new Audio(SND_CACHE[n]).play().catch(()=>{});} else if(SND_CACHE[n]===null){fb();} else probeSnd(n,u=>{if(u)new Audio(u).play().catch(()=>{});else fb();}); }
+function playCardSnd(k,num){ const sp='card_'+k+'_'+num;
+ if(SND_CACHE[sp]){new Audio(SND_CACHE[sp]).play().catch(()=>{});return;}
+ if(SND_CACHE[sp]===null){playSnd('card_'+k);return;}
+ probeSnd(sp,u=>{ if(u){new Audio(u).play().catch(()=>{});} else { playSnd('card_'+k); } }); }
+function loadCardArt(k,num,ok){ if(IMG_CACHE['cardart_'+k+'_'+num])return ok(IMG_CACHE['cardart_'+k+'_'+num]);
+ if(IMG_CACHE['cardart_'+k])return ok(IMG_CACHE['cardart_'+k]);
+ loadImgAny(['img/cards/'+k+'_'+num,'img/cards/'+k],u=>{ if(u){IMG_CACHE['cardart_'+k+'_'+num]=u; IMG_CACHE['cardart_'+k]=IMG_CACHE['cardart_'+k]||u;} ok(u); }); }
+let AC=null;
+function ctx(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();return AC;}
+function tick(){ try{const a=ctx(); const o=a.createOscillator(),g=a.createGain(); o.frequency.value=740; g.gain.value=.05; o.connect(g); g.connect(a.destination); o.start(); g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.07); o.stop(a.currentTime+.08);}catch(e){} }
+function synthDice(){ try{const a=ctx(); for(let i=0;i<7;i++){const t=a.currentTime+i*.06; const o=a.createOscillator(),g=a.createGain(); o.type='square'; o.frequency.value=300+Math.random()*500; g.gain.setValueAtTime(.06,t); g.gain.exponentialRampToValueAtTime(.0001,t+.05); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+.06);} }catch(e){} }
+function synthBuy(){ try{const a=ctx(); [880,1174,1568].forEach((f,i)=>{const t=a.currentTime+i*.09; const o=a.createOscillator(),g=a.createGain(); o.type='triangle'; o.frequency.value=f; g.gain.setValueAtTime(.09,t); g.gain.exponentialRampToValueAtTime(.0001,t+.18); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+.2);}); }catch(e){} }
+function diceSound(){ playSndFallback('dice',synthDice); }
+function buySound(){ playSndFallback('buy',synthBuy); }
+let musicList=[],mIdx=0,mAudio=null,mVol=.2,mPaused=false;
+function initMusic(done){ let left=6; for(let i=1;i<=6;i++) probeSnd('music_'+i,u=>{ if(u)musicList.push(u); if(--left==0){ musicList.sort(); done&&done(); } }); }
+function playMusic(){ if(!musicList.length)return; mAudio=new Audio(musicList[mIdx%musicList.length]); mAudio.volume=mVol; mAudio.onended=()=>{mIdx++;playMusic();}; mAudio.play().catch(()=>{}); mPaused=false; $('#mpause').textContent='❚❚'; }
+function restartMusic(){ if(mAudio){mAudio.onended=null;mAudio.pause();} playMusic(); }
+function musicNext(){ if(!musicList.length)return; mIdx=(mIdx+1)%musicList.length; restartMusic(); }
+function musicPrev(){ if(!musicList.length)return; mIdx=(mIdx-1+musicList.length)%musicList.length; restartMusic(); }
+function musicPause(){ if(!mAudio){playMusic();return;} if(mPaused){mAudio.play().catch(()=>{});mPaused=false;$('#mpause').textContent='❚❚';} else {mAudio.pause();mPaused=true;$('#mpause').textContent='►';} }
+function setMusicVol(v){ mVol=v/100; if(mAudio)mAudio.volume=mVol; $('#mvol').textContent=v+'%'; }
+function duckMusic(d){ if(mAudio){ mAudio.volume = d? Math.max(0.02,mVol*0.2) : mVol; } }
+let pageBgs=[],pageIdx=0,pageTimer=null;
+function applyBg(u){ document.body.style.backgroundImage=`url(${u})`; }
+function applyPageList(files){ pageBgs=Array.from(files).map(f=>URL.createObjectURL(f)); if(!pageBgs.length)return; pageIdx=0; applyBg(pageBgs[0]); if(pageTimer)clearInterval(pageTimer); if(pageBgs.length>1)pageTimer=setInterval(()=>{pageIdx=(pageIdx+1)%pageBgs.length;applyBg(pageBgs[pageIdx]);},20000); }
+let centerList=[],cIdx=0,cTimer=null,cToken=0;
+function playCenterList(files){ centerList=Array.from(files).map(f=>({url:URL.createObjectURL(f),type:f.type})); if(!centerList.length)return; if(cTimer){clearTimeout(cTimer);cTimer=null;} cToken++; cIdx=0; showCenterItem(cToken); }
+function showCenterItem(my){ if(my!==cToken)return; const box=$('#cbg'); const it=centerList[cIdx]; box.innerHTML='';
+ if(it.type.startsWith('video')){ const v=document.createElement('video'); v.src=it.url; v.autoplay=true; v.muted=true; v.playsInline=true; v.onended=()=>{cIdx=(cIdx+1)%centerList.length;showCenterItem(my);}; box.appendChild(v); }
+ else { const im=new Image(); im.src=it.url; box.appendChild(im); cTimer=setTimeout(()=>{cIdx=(cIdx+1)%centerList.length;showCenterItem(my);},12000); } }
+function toggleView(){$('#board').classList.toggle('flat');}
+function toggleInv(i){ if(S&&S.invHidden){S.invHidden[i]=!S.invHidden[i]; render();} }
+let TOKEN_URLS={},tokChoice=[];
+function pname(i){ return (document.getElementById('nm'+i)?.value||'').trim()||('Игрок '+(i+1)); }
+function probeTokens(){ for(let i=1;i<=6;i++){ (function(k){ loadImgAny(['img/tokens/'+k,'img/tokens/token_'+k],u=>{ if(u){TOKEN_URLS[k]=u; buildToksel();} }); })(i); } }
+function buildNames(){ const n=+$('#pn').value; $('#names').innerHTML=Array.from({length:n},(_,i)=>`<input id="nm${i}" placeholder="Игрок ${i+1}" maxlength="12" oninput="buildToksel()" style="margin:3px;width:130px">`).join(''); buildToksel(); }
+function buildToksel(){ const n=+$('#pn').value; while(tokChoice.length<n)tokChoice.push(0);
+ const ids=Object.keys(TOKEN_URLS).map(Number).sort((a,b)=>a-b);
+ $('#toksel').innerHTML=Array.from({length:n},(_,i)=>{ const opts=[0,...ids]; let ci=opts.indexOf(tokChoice[i]); if(ci<0)ci=0; tokChoice[i]=opts[ci]; const val=tokChoice[i];
+  const prev=val===0?`<span style="width:68px;height:68px;border-radius:50%;display:inline-block;background:${PCOL[i]};box-shadow:0 0 14px ${PCOL[i]}"></span>`:`<img src="${TOKEN_URLS[val]}">`;
+  return `<div class="tokrow"><b style="color:${PCOL[i]}">${pname(i)}</b><button class="tokbtn" onclick="tokCycle(${i},-1)">◀</button><span class="tokprev" title="Наведи, чтобы рассмотреть">${prev}</span><button class="tokbtn" onclick="tokCycle(${i},1)">▶</button><span style="opacity:.7;font-size:12px">${val===0?'цвет':'фишка '+val}</span></div>`; }).join(''); }
+function tokCycle(i,dir){ const ids=Object.keys(TOKEN_URLS).map(Number).sort((a,b)=>a-b); const opts=[0,...ids]; let ci=opts.indexOf(tokChoice[i]); if(ci<0)ci=0; ci=(ci+dir+opts.length)%opts.length; tokChoice[i]=opts[ci]; buildToksel(); }
+buildNames(); probeTokens();
+const BLOCKS=[
+{n:'COMMON #1',c:'#b0b7c3',cost:80,s:[['Wooden Knife',40,15,{inc:1},{inc:5}],['Stone Dagger',50,20,{sus:-1},{sus:-1}],['Iron Blade',60,25,{chips:['ulika']},{chips:['ulika']}]]},
+{n:'COMMON #2',c:'#b0b7c3',cost:90,s:[['Rusty Sword',55,18,{chips:['witness']},{chips:['witness']}],['Bronze Dagger',65,22,{sus:-1,inc:1},{inc:10}],['Steel Knife',75,28,{chips:['ulika'],sus:-1},{sus:-2}]]},
+{n:'UNCOMMON',c:'#42a5f5',cost:200,s:[['Blue Claw',80,40,{chips:['ulika'],sus:-1},{chips:['ulika'],sus:-1}],['Steel Fang',90,50,{chips:['witness']},{chips:['dopros','witness']}],['Crystal Shard',100,60,{sus:-2,inc:1},{sus:-2,inc:15}]]},
+{n:'RARE',c:'#66bb6a',cost:350,s:[['Viper Fang',120,70,{chips:['dopros'],sus:-1},{chips:['dopros'],susP:1}],['Shadow Cloak',140,90,{chips:['ulika'],sus:-2},{chips:['ulika'],sus:-1}],['Phantom Blade',160,110,{chips:['witness','witness'],sus:-1},{chips:['witness','witness','witness'],susP:1}]]},
+{n:'LEGENDARY',c:'#ef5350',cost:550,s:[['Blaze Knife',180,130,{chips:['zasada'],sus:-1},{chips:['zasada'],susP:1}],['Blaze Gun',200,150,{chips:['ulika'],sus:-2},{chips:['ulika'],sus:-1}],['Blaze Shield',220,170,{chips:['zasada','zasada'],sus:-2},{protZ:1,sus:-2}]]},
+{n:'GODLY',c:'#f06292',cost:500,s:[['Ice Wing',200,100,{chips:['ulika'],sus:-1},{chips:['dopros'],sus:-1}],['Fire Wing',250,150,{chips:['dopros'],sus:-2},{chips:['dopros','dopros'],susP:1}],['Gold Wing',300,200,{chips:['ulika','ulika'],sus:-1},{chips:['ulika','ulika','ulika','dopros']}]]},
+{n:'ANCIENT',c:'#ffa726',cost:800,s:[['Elderwood Scythe',350,250,{chips:['ulika','ulika'],sus:-2},{chips:['ulika','ulika','ulika'],sus:-1}],["Nik's Scythe",400,300,{chips:['dopros','dopros'],sus:-2},{chips:['dopros','dopros','dopros'],susP:1}],['Corrupt',450,350,{chips:['ulika','ulika','ulika'],sus:-3},{chips:['ulika','ulika','ulika','ulika'],sus:-2}]]},
+{n:'UNIQUE',c:'#ffd700',cost:1200,s:[['Eternal Flame',500,350,{chips:['ulika','ulika','ulika'],sus:-3},{chips:['ulika','ulika','ulika','ulika'],sus:-1}],['Chroma Light',600,400,{chips:['dopros','dopros','dopros'],sus:-3},{chips:['dopros','dopros','dopros'],susP:2}],['Void Blade',700,500,{chips:['ulika','ulika','ulika','ulika'],sus:-4},{chips:['ulika','ulika','ulika','ulika','ulika'],sus:-3}]]}];
+const SKINCOL={}; BLOCKS.forEach(b=>b.s.forEach(s=>{SKINCOL[s[0]]=b.c;}));
+const SHOP=[['Batwing',350,{chips:['dopros'],protZ:1}],['Elderwood Scythe',300,{chips:['ulika','ulika'],sus:-1}],['Frostbite',250,{chips:['ulika','witness']}],['Candy',280,{chips:['ulika','ulika','dopros']}],['Sugar',260,{chips:['dopros','witness']}],['Ice Dragon',320,{chips:['ulika','ulika'],protF:1}],['Hallowscythe',340,{chips:['ulika','ulika'],sus:-1}],['Logchopper',300,{chips:['ulika','dopros']}],['Swirlyblade',220,{chips:['dopros'],susSelf:1}],['Swirlygun',230,{chips:['ulika','witness']}],['Makeshift',280,{chips:['ulika','ulika','dopros']}],['Laser',240,{chips:['ulika'],susSelf:1}],['Blaster',260,{chips:['ulika','ulika'],sus:-1}],['Ginger Luger',250,{chips:['dopros','witness']}],['Plasmabeam',300,{chips:['ulika','ulika','dopros']}],['Nightblade',230,{chips:['ulika'],sus:-1}],['Gemstone',280,{chips:['ulika','ulika','witness']}],['Heat',240,{chips:['dopros'],susSelf:1}],['Fang',220,{chips:['ulika','witness']}],['Seer',200,{chips:['ulika'],sus:-1}],['Pixel',230,{chips:['dopros'],susSelf:1}],['Tides',250,{chips:['ulika','ulika'],sus:-1}],['Luger',230,{chips:['ulika','witness']}],['Slasher',240,{chips:['dopros'],susSelf:1}],['Chill',260,{chips:['ulika','ulika'],sus:-1}],['Clockwork',240,{chips:['ulika','witness']}],['Spider',300,{chips:['dopros'],protZ:1}],["Vampire's Edge",290,{chips:['ulika','ulika','dopros']}],['Candleflame',310,{chips:['ulika'],sus:-1}],['Eternal III',280,{chips:['ulika','ulika','witness']}]];
+const WIT=[['Я видел, как кто-то выбегал из особняка!','L',50],['Мне показалось, что я слышал шаги на крыше','R',30],['Кто-то прятался за углом!','ANY',20],['Я заметил движение в окне','OPP',40],['Кто-то оставил следы на полу','MINC',30],['Я слышал крик!','LASTTURN',50],['Кто-то бежал по коридору','MAXS',20],['Я видел свет в подвале','NOS',30],['Кто-то стоял у входа','ANY',40],['Я заметил, что дверь была открыта','ROOF',30],['Кто-то шептался в углу','MINC',20],['Я видел, как кто-то прятал нож','BOUGHT',50],['Кто-то оставил записку','POL',30],['Я слышал, как кто-то звал на помощь','USEDCH',40],['Кто-то бродил по коридорам','MAXC',20],['Я заметил, что свет погас','NOS',30],['Кто-то спрятался под лестницей','LASTCH',40],['Я слышал шаги наверху','MAXS',30],['Кто-то пробежал мимо меня','START',20],['Я видел, как кто-то смотрел в окно','NOCH',50]];
+const ALI=['Я был дома в это время','Я гулял в парке','Я был в магазине','Я был с друзьями','Я работал в это время','Я спал','Я был в школе','Я был на тренировке','Я гулял с собакой','Я был в гостях','Я смотрел фильм','Я был в библиотеке','Я играл в Roblox','Я был в кафе','Я читал книгу','Я был в кино','Я был у бабушки','Я был в музее','Я был на дне рождения','Я был в спортзале'];
+const ULI=[['На месте преступления найден отпечаток пальца','L',1,50],['Найден обрывок ткани','R',1,30],['Найден след обуви','OPP',1,40],['Найден волос','MINS',1,30],['Найдена записка','MAXC',1,50],['Найден окурок','NOCH',1,30],['Найден нож','ROOF',2,50],['Найден клочок бумаги с адресом','MAXS',1,40],['Найден телефон','CRIME',1,30],['Найдена пуговица','NOS',1,20],['Найден кровавый след','MINC',2,50],['Найдена маска','USEDCH',1,40],['Найдена фотография','POL',1,30],['Найден шарф','MAXC',1,20],['Найдена пачка сигарет','NOCH',1,50],['Найден ключ','MAXS',1,40],['Найдена сумка','ROOF',1,30],['Найдена расчёска','MINC',1,20],['Найдена бутылка','CRIME',1,50],['Найдена карта','NOS',1,60]];
+const DOP=[['Где ты был в 22:00?','L',1,50],['Ты знаешь убийцу?','R',1,40],['Ты видел что-то подозрительное?','OPP',1,30],['Почему ты был на крыше?','MINS',1,50],['Ты слышал крик?','MAXC',1,30],['Ты знаешь, где был убийца?','ANY',2,60],['Ты видел оружие?','NOCH',1,20],['Ты был один?','ROOF',1,40],['Ты знал жертву?','MAXS',1,30],['Почему ты убегал?','CRIME',2,50],['Ты видел, как кто-то выходил?','MINC',1,20],['Ты слышал шаги?','NOCH',1,30],['Ты был на месте преступления?','POL',2,60],['Ты знал о планах убийцы?','MAXC',1,40],['Почему ты прятался?','NOS',1,30],['Ты видел, как кто-то убегал?','START',1,20],['Ты слышал выстрел?','MAXS',1,50],['Ты был с кем-то?','NOCH',1,30],['Ты видел, как кто-то входил?','ROOF',1,40],['Почему ты здесь оказался?','MAXC',1,20]];
+const ZAS=[['Ты нападаешь на игрока слева!','L',1,100],['Ты устраиваешь засаду!','R',1,100],['Ты нападаешь из темноты!','OPP',1,100],['Ты используешь нож!','ANY',2,150],['Ты нападаешь на богатого!','MAXC',1,150],['Ты нападаешь на слабого!','MINS',1,100],['Ты атакуешь с крыши!','ANY',2,150],['Ты нападаешь на невиновного!','ANY',1,100],['Ты крадёшь монеты!','ANY',1,100],['Ты нападаешь на игрока, который не использовал фишки!','NOCH',1,150],['Ты атакуешь в темноте!','R',1,100],['Ты нападаешь на игрока с наименьшим числом монет!','MINC',1,100],['Ты устраиваешь ловушку!','ANY',2,150],['Ты нападаешь на игрока с наибольшим числом скинов!','MAXS',1,100],['Ты используешь скрытность!','SELF',1,100],['Ты нападаешь на игрока, который недавно был на «Преступлении»!','CRIME',1,150],['Ты атакуешь сзади!','L',1,100],['Ты нападаешь на игрока, у которого меньше всего скинов!','MINS',1,100],['Ты используешь хитрость!','SELF',1,150],['Ты нападаешь на игрока, который не покупал скины!','NOS',1,100]];
+const TAJ=[['Ты нашёл тайник с монетами!',{coins:200}],['В тайнике лежали драгоценности!',{coins:300}],['Старый тайник в стене!',{coins:100,sus:-1}],['Тайник с картой сокровищ!',{coins:200,chips:['ulika']}],['Тайник с сокровищами пиратов!',{coins:400}],['В тайнике лежала карта!',{coins:100,reroll:1}],['Тайник с амулетом!',{sus:-2}],['Тайник с ключами от всех дверей!',{coins:150,toStart:1}],['В тайнике было зелье удачи!',{double:1}],['Тайник с маской невидимости!',{coins:50,stealth:1}],['Тайник с дневником!',{coins:150,sus:-1}],['Тайник с защитным амулетом!',{protZ:1}],['Тайник с лупой!',{coins:50,chips:['dopros']}],['Тайник с компасом!',{coins:100,toStart:1}],['Тайник с волшебным зельем!',{coins:50,chipDouble:1}],['Тайник с кристаллом!',{coins:200,clearSus:1}],['Тайник с секретными документами!',{coins:100,reveal:1}],['Тайник с талисманом!',{coins:50,setPower:1}],['Тайник с несметными сокровищами!',{coins:500,sus:-1}],['Тайник с часами!',{sus:-1,coins:100}],['Тайник с забавной игрушкой!',{coins:50}],['Тайник с запиской «Ты мне нравишься»',{sus:-1,susAny:1}],['Тайник с чужим носком!',{susL:1,coins:20}],['Тайник с письмом от убийцы!',{susR:1,chips:['ulika']}],['Тайник с пустой коробкой!',{}],['Тайник с билетом в кино!',{coins:50,reroll:1}],['Тайник с картой «Выход»!',{toStart:1,coins:50}],['Тайник с книгой «Как стать убийцей»',{susSelf:1,chips:['ulika']}],['Тайник с запиской «Ты следующий»',{susSelf:2,coins:100}],['Тайник с золотым унитазом!',{coins:300,sus:-1}]];
+let CELLS=[],S=null,DECKS={};
+function buildCells(){ CELLS=[]; const sp=o=>CELLS.push(o), sk=(bi,k)=>{const s=BLOCKS[bi].s[k];CELLS.push({t:'skin',bi,b:k,n:s[0],price:s[1],fee:s[2],c:BLOCKS[bi].c});};
+ sp({t:'start',n:'СТАРТ',c:'#2e7d32'}); sk(0,0);sk(0,1);sk(0,2); sp({t:'coin',n:'МОНЕТА',c:'#fafafa'}); sk(1,0);sk(1,1);sk(1,2);
+ sp({t:'roof',n:'КРЫША НЕБОСКРЁБА',c:'#8e1414'}); sk(2,0);sk(2,1);sk(2,2); sp({t:'tunnel',n:'ТОННЕЛЬ МЕТРО',c:'#fafafa'}); sk(3,0);sk(3,1);sk(3,2);
+ sp({t:'crime',n:'ПРЕСТУПЛЕНИЕ',c:'#8e1414'}); sk(4,0);sk(4,1);sk(4,2); sp({t:'stash',n:'ТАЙНИК',c:'#fafafa'}); sk(5,0);sk(5,1);sk(5,2);
+ sp({t:'police',n:'ПОЛИЦЕЙСКИЙ УЧАСТОК',c:'#1a3f8f'}); sk(6,0);sk(6,1);sk(6,2); sp({t:'shop',n:'МАГАЗИН СКИНОВ',c:'#fafafa'}); sk(7,0);sk(7,1);sk(7,2);}
+function pos(i){if(i<=8)return[1,i+1];if(i<=15)return[i-7,9];if(i<=23)return[9,9-(i-16)];if(i==24)return[9,1];return[9-(i-24),1];}
+const sh=a=>a.map(x=>[Math.random(),x]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+function modal(html){return new Promise(res=>{const ov=$('#ov');ov.style.display='flex';ov.innerHTML=`<div class="card">${html}</div>`;ov.querySelectorAll('button[data-v]').forEach(b=>b.onclick=()=>{ov.style.display='none';res(b.dataset.v)});});}
+function log(m){$('#log').innerHTML+=`<div>• ${m}</div>`;$('#log').scrollTop=9999;}
+function cellLabel(i){const c=CELLS[i];return c.t=='skin'?c.n:(c.n||'');}
+function skThumb(nm){ const col=SKINCOL[nm]||'#d4af37'; const u=IMG_CACHE[slug(nm)]; return `<span class="sk" data-skin="${nm}" style="border-color:${col};box-shadow:0 0 7px ${col}88" title="${nm}">${u?'<img src="'+u+'">':'🗡'}</span>`; }
+function skinRow(q,me){ if(!q.skins.length)return'<span style="opacity:.55">скинов нет</span>';
+ return q.skins.map(nm=>{ if(me)return skThumb(nm); const col=SKINCOL[nm]||'#d4af37'; return `<span class="sk back" style="border-color:${col}" title="Скин скрыт">MM</span>`; }).join(''); }
+function susColor(n){ return n>=10?'#ff1744':n>=5?'#ff9100':'#00c853'; }
+function tokHtml(q){ return q.tokenUrl?`<span class="tokimg" style="--glow:${q.col}"><img src="${q.tokenUrl}"></span>`:`<span class="tok" style="background:${q.col};color:${q.col}"></span>`; }
+function check15(){ for(const q of S.players){ if(q.sus>=15&&!q.rev15){ q.rev15=true; playSnd('crime',3000);
+ if(q.role==='murderer'){ win('detectives',`🚨 ${q.name} набрал 15 подозрений — УБИЙЦА РАСКРЫТ!`); return true; }
+ else if(q.role==='sheriff'){ modal(`<h1>⛔ 15 ПОДОЗРЕНИЙ!</h1><b>${q.name}</b> (Шериф) дискредитирован — его голос больше не учитывается!<br><small>${BRAND}</small><br><br><button data-v="ok">Продолжить</button>`); }
+ else { q.muted=true; modal(`<h1>🚨 15 ПОДОЗРЕНИЙ!</h1><b>${q.name}</b> под максимальным подозрением — его голос не учитывается, пока не снимет подозрения!<br><small>${BRAND}</small><br><br><button data-v="ok">Продолжить</button>`); } } } return false; }
+/* ── ОБВИНЕНИЕ: угадал — победа; ошибся — участок, −2 хода, потеря денег и скинов; игра ПРОДОЛЖАЕТСЯ ── */
+async function accuseOpen(){ if(!S||S.busy)return; const p=S.players[S.cur]; const opts=others(p);
+ const v=await modal(`<h2>🚔 Обвинение</h2>${p.name}, кого ты обвиняешь в убийстве?<br><small>Угадал — победа. Ошибся — участок, −2 хода, потеря всех денег и скинов!</small><br><br>${opts.map((q,i)=>`<button data-v="${i}">${q.name} (${q.sus}🚨)</button> `).join('')}<br><button data-v="no">Отмена</button>`);
+ if(v==='no'||v===undefined)return; const t=opts[+v]; if(!t)return;
+ const c2=await modal(`<h2>⚖ Подтвердить обвинение?</h2>Ты уверен, что <b>${t.name}</b> — Убийца?<br><br><button data-v="yes">ДА, обвиняю!</button> <button data-v="no">Нет</button>`);
+ if(c2!=='yes')return;
+ if(t.role==='murderer'){ win('detectives',`🎯 ${p.name} вычислил Убийцу — это ${t.name}! ПОБЕДА!`); return; }
+ p.coins=0; p.skins=[]; p.sets=[]; for(const k in OWN){ if(OWN[k]===S.cur) delete OWN[k]; }
+ p.pos=24; p.skipN=(p.skipN||0)+2; playSnd('police',3000);
+ log(`❌ ${p.name} ошибся с обвинением → участок, −2 хода, потерял все деньги и скины`);
+ await modal(`<h1>❌ ОШИБКА!</h1><b>${t.name}</b> не Убийца…<br>${p.name} отправляется в участок: −2 хода, потеря всех денег и скинов!<br><small>${BRAND}</small><br><br><button data-v="ok">Продолжить игру</button>`);
+ render(); await endTurn(); }
+/* ── ИГРА ПО СЕТИ (коды хода) ── */
+function canonAlibi(){ return ALI.map((t,i)=>[i+1,[t,i==5?2:1]]); }
+function exportCode(){ if(!S)return; const obj={S,OWN,w:DECKS.witness.map(e=>e[0]),a:DECKS.alibi.map(e=>e[0]),u:DECKS.ulika.map(e=>e[0]),d:DECKS.dopros.map(e=>e[0]),z:DECKS.zasada.map(e=>e[0]),t:DECKS.taj.map(e=>e[0]),s:DECKS.shop.map(x=>SHOP.indexOf(x))};
+ const code=btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+ modal(`<h2>📤 Код хода</h2><small>Скопируй и отправь следующему игроку в чат. Он нажмёт 📥 и вставит.</small><textarea readonly onclick="this.select()">${code}</textarea><br><button data-v="ok">OK</button>`); }
+function importCode(){ modal(`<h2>📥 Принять код хода</h2><small>Вставь код от другого игрока и нажми «Принять».</small><textarea id="imp"></textarea><br><button onclick="doImport()">Принять</button> <button data-v="ok">Отмена</button>`); }
+function doImport(){ try{ const code=$('#imp').value.trim(); const obj=JSON.parse(decodeURIComponent(escape(atob(code))));
+ S=obj.S; OWN=obj.OWN||{}; const AB=canonAlibi();
+ DECKS={witness:obj.w.map(n=>[n,WIT[n-1]]),alibi:obj.a.map(n=>AB[n-1]),ulika:obj.u.map(n=>[n,ULI[n-1]]),dopros:obj.d.map(n=>[n,DOP[n-1]]),zasada:obj.z.map(n=>[n,ZAS[n-1]]),taj:obj.t.map(n=>[n,TAJ[n-1]]),shop:obj.s.map(i=>SHOP[i])};
+ if(!S.invHidden)S.invHidden={};
+ $('#setup').style.display='none'; $('#game').style.display='block'; $('#ov').style.display='none';
+ render(); log('📥 Код хода принят — продолжаем!'); }catch(e){ modal('<h2>Ошибка</h2>Не удалось прочитать код. Проверь, что вставил его полностью.<br><br><button data-v="ok">OK</button>'); } }
+function render(){ $('#round').textContent=`Раунд ${S.round}/20`; const p=S.players[S.cur];
+ $('#cur').innerHTML=`Ходит: <b style="color:${p.col}">${p.name}</b>`;
+ $('#players').innerHTML=S.players.map((q,i)=>{ const st=[q.protZ?'🛡от Засады':'',q.protF?'🛡от штрафа':'',q.stealth?'🕶скрытность':'',q.double?'⚡×2 бросок':'',q.chipDouble?'⚗фишка×2':'',q.setPower?`💪сет+${q.setPower}`:''].filter(Boolean).join(' · ');
+ const sc=susColor(q.sus);
+ return `<div class="pl ${i==S.cur?'cur':''}" style="border-left-color:${q.col}">
+ ${q.tokenUrl?`<span class="tokimg" style="--glow:${q.col};width:24px;height:24px;vertical-align:middle"><img src="${q.tokenUrl}"></span>`:''}
+ <b style="color:${q.col};background:none;font-size:14px">${q.name}</b> ${q.discred?'⛔':''}${q.muted?'🔇':''}${(q.skipN||0)>0?'💤':''}
+ <span class="susBadge ${q.sus>=10?'hot':''}" style="background:${sc}" title="Подозрения">🚨 ${q.sus}</span><br>
+ <div class="susBar" title="До раскрытия: 15"><span style="width:${Math.min(100,q.sus/15*100)}%;background:${sc}"></span></div>
+ 💰 ${q.coins} · 🎟 ${q.tokens} · +${q.inc}/круг · 🎲 ходов: ${q.moves||0}<br>
+ 📍 ${cellLabel(q.pos)}${q.sets.length?' · 🧩'+q.sets.map(x=>BLOCKS[x].n).join(','):''}<br>
+ 🗡 <b style="background:none;color:#dfe6ff">Скины (${q.skins.length}):</b> <button class="hbtn" style="padding:2px 8px;font-size:11px" onclick="toggleInv(${i})" title="Скрыть/показать скины">${S.invHidden[i]?'🙈':''}</button><br>
+ <span class="skrow">${S.invHidden[i]?'<span style="opacity:.55">скрыто</span>':skinRow(q,i==S.cur)}</span><br>
+ ${st?`<span style="opacity:.9">✨ ${st}</span><br>`:''}
+ <span class="chips">${i==S.cur?Object.keys(q.chips).filter(k=>q.chips[k]>0).map(k=>`<button onclick="useChip('${k}')" ${S.chipUsed?'disabled':''}>${{witness:'👁',alibi:'⏳',ulika:'🔍',dopros:'🎤',zasada:'💣'}[k]}</button>`).join(''):'фишки: '+Object.values(q.chips).reduce((a,b)=>a+b,0)}</span></div>`;}).join('');
+ document.querySelectorAll('.cell').forEach(c=>{ const i=+c.dataset.i; const shd=[]; c.classList.remove('here');
+  const ob=c.querySelector('.own'); if(ob)ob.remove();
+  const o=OWN[i];
+  if(o!=null&&CELLS[i]&&CELLS[i].t=='skin'){ const q=S.players[o]; c.insertAdjacentHTML('beforeend',`<span class="own" style="background:${q.col};color:${q.col}" title="Владелец: ${q.name}"></span>`); shd.push(`inset 0 0 12px ${q.col}99`); }
+  S.players.forEach(q=>{ if(q.pos==i) shd.push(`0 0 12px ${q.col}`); });
+  c.style.boxShadow=shd.join(',');
+ });
+ document.querySelectorAll('.toks').forEach(t=>t.innerHTML='');
+ S.players.forEach(q=>{ const el=document.querySelector(`[data-i="${q.pos}"] .toks`); if(el)el.innerHTML+=tokHtml(q); });
+ const ce=document.querySelector(`[data-i="${p.pos}"]`);if(ce)ce.classList.add('here');
+ check15();}
+function addSus(q,n,why){ if(n>0&&q.stealth>0){q.stealth--;log(`🕶 ${q.name}: скрытность поглотила подозрение`);return;}
+ q.sus=Math.max(0,q.sus+n); if(why)log(`🚨 ${q.name}: ${n>0?'+':''}${n} подозрения (${why})`);
+ if(q.sus>=15&&q.role=='sheriff'&&!q.discred){q.discred=true;log('⛔ Шериф дискредитирован!');}}
+function pay(q,n){if(n<=0)return;if(q.protF>0){q.protF--;log(`🛡 ${q.name}: защита от штрафа`);return;}q.coins=Math.max(0,q.coins-n);}
+function others(q){return S.players.filter(x=>x!==q);}
+function pick(q,code){const O=others(q),i=S.players.indexOf(q),n=S.players.length;let c=[];
+ switch(code){case'L':c=[S.players[(i+1)%n]];break;case'R':c=[S.players[(i-1+n)%n]];break;
+ case'OPP':c=n>=4?[S.players[(i+2)%n]]:O;break;case'MINC':c=[...S.players].sort((a,b)=>a.coins-b.coins).slice(0,1);break;
+ case'MAXC':c=[...S.players].sort((a,b)=>b.coins-a.coins).slice(0,1);break;
+ case'MAXS':c=[...S.players].sort((a,b)=>b.skins.length-a.skins.length).slice(0,1);break;
+ case'MINS':c=[...S.players].sort((a,b)=>a.skins.length-b.skins.length).slice(0,1);break;
+ case'NOS':c=O.filter(x=>x.skins.length==0);break;case'NOCH':c=O.filter(x=>!x.usedChip);break;
+ case'USEDCH':c=O.filter(x=>x.usedChip);break;case'LASTCH':c=S.lastChip?[S.lastChip]:O;break;
+ case'LASTTURN':c=[S.players[(i-1+n)%n]];break;case'ROOF':c=O.filter(x=>x.vRoof);break;
+ case'POL':c=O.filter(x=>x.vPol);break;case'START':c=O.filter(x=>x.vStart);break;
+ case'CRIME':c=O.filter(x=>x.vCrime);break;case'BOUGHT':c=O.filter(x=>x.bought);break;default:c=O;}
+ c=c.filter(x=>x!==q);return c.length?c[Math.floor(Math.random()*c.length)]:(O.length?O[Math.floor(Math.random()*O.length)]:q);}
+function applyFx(q,fx){if(!fx)return; if(fx.coins)q.coins+=fx.coins; if(fx.sus)addSus(q,fx.sus,'эффект'); if(fx.susSelf)addSus(q,fx.susSelf,'эффект');
+ if(fx.inc)q.inc+=fx.inc; if(fx.chips)fx.chips.forEach(k=>q.chips[k]=(q.chips[k]||0)+1);
+ if(fx.protZ)q.protZ++; if(fx.protF)q.protF++; if(fx.stealth)q.stealth++; if(fx.double)q.double=true;
+ if(fx.chipDouble)q.chipDouble=true; if(fx.setPower)q.setPower++; if(fx.clearSus){q.sus=0;log(`💎 ${q.name}: все подозрения сброшены`);}
+ if(fx.toStart){q.pos=0;log(`🧭 ${q.name} → СТАРТ`);} if(fx.susAny)addSus(pick(q,'ANY'),1,'тайник');
+ if(fx.susL)addSus(pick(q,'L'),1,'тайник'); if(fx.susR)addSus(pick(q,'R'),1,'тайник');
+ if(fx.susP)addSus(pick(q,'ANY'),fx.susP,'сет'); if(fx.reveal){const t=pick(q,'ANY');modal(`<h2>📄 Секретные документы</h2>Роль ${t.name}: <b>${RLBL[t.role]}</b><br><br><button data-v="ok">OK</button>`);}}
+function qrModal(p){ const goal=p.role=='sheriff'?'Вычисли Убийцу и обвини его!':p.role=='murderer'?'Останься нераскрытым до конца!':'Помоги Шерифу поймать Убийцу!';
+ const txt=`MURDER MONOPOLY\n${p.name}, твоя роль: ${RLBL[p.role]}\n${goal}`;
+ return new Promise(res=>{const ov=$('#ov');ov.style.display='flex';ov.innerHTML=`<div class="card"><h2>📱 ${p.name}</h2><div style="font-size:11px;opacity:.8">Наведи камеру телефона на QR — роль секретная.<br>Нет интернета? Роль появится ниже.</div><img width="220" height="220" style="border-radius:10px;background:#fff;padding:8px;margin:8px" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(txt)}" onerror="this.style.display='none';document.getElementById('qralt').style.display='block'"><div id="qralt" style="display:none"><h1>${RLBL[p.role]}</h1>${goal}</div><br><button id="qok">Дальше</button></div>`;$('#qok').onclick=()=>{ov.style.display='none';res();};});}
+async function startGame(){ buildCells(); OWN={}; const n=+$('#pn').value;
+ const roles=sh(['sheriff','murderer',...Array(Math.max(0,n-2)).fill('civilian')]).slice(0,n);
+ S={players:[],cur:0,round:1,chipUsed:false,lastChip:null,busy:false,invHidden:{}};
+ for(let i=0;i<n;i++){ const nm=($('#nm'+i)?.value||'').trim()||('Игрок '+(i+1));
+  S.players.push({name:nm,col:PCOL[i],role:roles[i],coins:500,sus:3,tokens:3,
+  chips:{witness:1,alibi:1,ulika:1,dopros:1,zasada:1},skins:[],sets:[],inc:0,pos:0,skipN:0,avoid:false,discred:false,muted:false,rev15:false,
+  usedChip:false,bought:false,vRoof:false,vPol:false,vStart:false,vCrime:false,stealth:0,protZ:0,protF:0,double:false,chipDouble:false,setPower:0,moves:0,
+  tokenUrl:tokChoice[i]?TOKEN_URLS[tokChoice[i]]||null:null});}
+ DECKS={witness:sh(WIT.map((t,i)=>[i+1,t])),alibi:sh(canonAlibi()),ulika:sh(ULI.map((t,i)=>[i+1,t])),dopros:sh(DOP.map((t,i)=>[i+1,t])),zasada:sh(ZAS.map((t,i)=>[i+1,t])),taj:sh(TAJ.map((t,i)=>[i+1,t])),shop:sh(SHOP)};
+ loadImgAny(['img/bg','img/icons/bg'],u=>{if(u)applyBg(u);});
+ const b=$('#board');b.innerHTML='';
+ CELLS.forEach((c,i)=>{const[r,cc]=pos(i);const d=document.createElement('div');d.className='cell'+(c.t=='skin'?' skin':'');d.dataset.i=i;
+  d.style.gridRow=r;d.style.gridColumn=cc;d.style.background=c.c;
+  let inner='';
+  if(c.t=='skin')inner+=`<span class="blk">${BLOCKS[c.bi].n}</span>`;
+  if(c.n)inner+=`<span class="side"><span class="nm">${c.n}</span>${c.price?`<span class="pr">${c.price}</span>`:''}</span>`;
+  inner+='<span class="toks"></span>';
+  d.innerHTML=inner; d.title=(c.n||'')+(c.price?` · цена ${c.price}`:'')+(c.fee?` · попадание ${c.fee}`:'');
+  const key=c.t=='skin'?slug(c.n):SLUG[c.t];
+  loadImgAny(['img/cells/'+key,'img/icons/'+key,'img/'+key],url=>{if(url){IMG_CACHE[key]=url;const im=document.createElement('img');im.className='cellimg';im.src=url;d.prepend(im);}});
+  if(c.t=='shop')d.addEventListener('click',()=>{const p=S.players[S.cur];if(!S.busy&&p.pos==28)openShop(p);});
+  b.appendChild(d);});
+ const cen=document.createElement('div');cen.className='center';
+ cen.innerHTML=`<div class="cbg" id="cbg"></div><div class="logo" style="width:54px;height:54px;font-size:20px">MM</div>
+ <div class="stacks">${[['witness','👁','СВИДЕТЕЛЬ'],['alibi','⏳','АЛИБИ'],['ulika','🔍','УЛИКА'],['dopros','🎤','ДОПРОС'],['zasada','💣','ЗАСАДА']].map(s=>`<div class="stack" data-k="${s[0]}" onclick="useChip('${s[0]}')"><span class="si">${s[1]}</span><span>${s[2]}</span></div>`).join('')}</div>
+ <div style="opacity:.65;font-size:11px">Наведи на стопку или спецклетку — подскажу! Нажми стопку — возьмёшь карту</div>`;
+ cen.querySelectorAll('.stack').forEach(st=>{const bk=st.dataset.k;loadImgAny(['img/backs/'+bk,'img/icons/'+bk],u=>{if(u){st.classList.add('custom');st.style.backgroundImage=`url(${u})`;} });});
+ loadImgAny(['img/center','img/icons/center'],url=>{if(url){const im=new Image();im.className='centerimg';im.src=url;cen.insertBefore(im,cen.querySelector('.stacks'));}});
+ b.appendChild(cen);
+ $('#setup').style.display='none';$('#game').style.display='block';
+ probeSnd('hover',()=>{}); probeSnd('dice',()=>{}); probeSnd('buy',()=>{}); probeSnd('tunnel',()=>{}); probeSnd('shop',()=>{}); initMusic(playMusic);
+ if($('#qr').checked){ for(const p of S.players) await qrModal(p); }
+ else { for(const p of S.players){ await modal(`<h2>${p.name}</h2>Твоя роль (никому не говори):<h1>${RLBL[p.role]}</h1>${p.tokenUrl?`<div style="margin:6px 0"><span class="tokimg" style="--glow:${p.col};width:44px;height:44px"><img src="${p.tokenUrl}"></span><br><span style="font-size:11px;opacity:.8">Твоя фишка на поле</span></div>`:''}<button data-v="ok">Скрыть и передать дальше</button>`); } }
+ playSnd('start'); render();log('🌆 Игра началась! Тени сгущаются… · '+BRAND);}
+async function roll(){ if(S.busy)return;S.busy=true;$('#roll').disabled=true; const p=S.players[S.cur]; p.moves=(p.moves||0)+1;
+ diceSound();
+ const F=['⚀','⚁','⚂','⚃','⚄','⚅']; for(let i=0;i<8;i++){$('#dice').textContent=F[Math.floor(Math.random()*6)];await sleep(70);}
+ let d=1+Math.floor(Math.random()*6); if(p.double){d=Math.min(12,d*2);p.double=false;log('⚡ Удвоенный бросок!');}
+ $('#dice').textContent=F[d-1]||'⚅'; log(`🎲 ${p.name} бросил ${d}`);
+ for(let s=0;s<d;s++){p.pos=(p.pos+1)%32; if(p.pos==0){p.coins+=200+p.inc;addSus(p,-1,'прохождение СТАРТА');p.vStart=true;log(`💰 ${p.name} прошёл СТАРТ: +${200+p.inc}`);} render();await sleep(160);}
+ const meet=S.players.find(q=>q!==p&&q.pos==p.pos);
+ if(meet){playSnd('meet');await modal(`<h2>👥 Встреча!</h2><b style="color:${p.col}">${p.name}</b> и <b style="color:${meet.col}">${meet.name}</b> на одной клетке! Можно использовать любую фишку для взаимодействия.<br><br><button data-v="ok">OK</button>`);}
+ await land(p); S.busy=false;$('#end').disabled=false; render();}
+async function openShop(p){ const opts=DECKS.shop.filter(s=>!S.players.some(q=>q.skins.includes(s[0]))).slice(0,6);
+ return new Promise(res=>{const ov=$('#ov');ov.style.display='flex';
+ ov.innerHTML=`<div class="card"><h2>🟠 МАГАЗИН СКИНОВ</h2><div style="font-size:12px">💰 У тебя: <b style="color:var(--gold)">${p.coins}</b> монет</div><div style="font-size:11px;opacity:.8">Брось кубик — выпавшее число укажет скин, который можно купить.</div>
+ <div class="shopgrid">${opts.map((s,i)=>`<div class="scard" id="sc${i}"><span class="num">${i+1}</span><div style="font-size:30px">🗡</div><div><b>${s[0]}</b></div><div style="color:var(--gold);font-weight:800">${s[1]}</div></div>`).join('')}</div>
+ <div id="shopdie" style="font-size:42px">🎲</div><button id="sroll">Бросить кубик</button> <button id="sclose">Уйти</button></div>`;
+ $('#sclose').onclick=()=>{ov.style.display='none';res();};
+ $('#sroll').onclick=async()=>{$('#sroll').disabled=true;diceSound();const F=['⚀','⚁','⚂','⚃','⚄','⚅'];
+  for(let i=0;i<8;i++){$('#shopdie').textContent=F[Math.floor(Math.random()*6)];await sleep(70);}
+  const d=1+Math.floor(Math.random()*6);$('#shopdie').textContent=F[d-1];log(`🛒 ${p.name}: в магазине выпало ${d}`);
+  const idx=Math.min(d,opts.length)-1,s=opts[idx],el=$('#sc'+idx);el.classList.add('win');
+  el.insertAdjacentHTML('beforeend',`<button id="sbuy" style="margin-top:4px;padding:4px 8px;font-size:10px">${p.coins>=s[1]?'Купить · останется '+(p.coins-s[1]):'Мало монет'}</button>`);
+  $('#sbuy').onclick=()=>{if(p.coins>=s[1]){p.coins-=s[1];p.skins.push(s[0]);p.bought=true;applyFx(p,s[2]);buySound();log(`🛒 ${p.name} купил ${s[0]}`);render();ov.style.display='none';res();}};};});}
+async function land(p){ const c=CELLS[p.pos];
+ if(c.t=='skin'){const owner=S.players.find(q=>q.skins.includes(c.n));
+  if(!owner){ if(p.coins>=c.price){const v=await modal(`<h2>🗡 ${c.n}</h2><span class="rar" style="color:${c.c}">${BLOCKS[c.bi].n}</span>
+   <div style="font-size:12px;margin:6px 0">💰 У тебя: <b style="color:var(--gold)">${p.coins}</b> · Цена: <b>${c.price}</b> · Останется: <b style="color:#8bc34a">${p.coins-c.price}</b></div>
+   <div style="font-size:11px;margin-bottom:6px">Твои скины: ${p.skins.length?'<span class="skrow">'+p.skins.map(nm=>skThumb(nm)).join('')+'</span>':'—'}</div>
+   Плата за попадание: ${c.fee}<br>Купить?<br><br><button data-v="yes">Купить</button> <button data-v="no">Нет</button>`);
+   if(v=='yes'){p.coins-=c.price;p.skins.push(c.n);p.bought=true;applyFx(p,BLOCKS[c.bi].s[c.b][3]);buySound();OWN[p.pos]=S.players.indexOf(p);log(`🛒 ${p.name} купил ${c.n} — клетка теперь его!`);
+    const bl=BLOCKS[c.bi]; if(!p.sets.includes(c.bi)&&bl.s.every(sk=>p.skins.includes(sk[0]))){const v2=await modal(`<h2>🧩 Сет ${bl.n}!</h2>Заплатить ${bl.cost} и усилить все 3 скина?<br><br><button data-v="yes">Да</button> <button data-v="no">Позже</button>`);
+     if(v2=='yes'){p.coins-=bl.cost;p.sets.push(c.bi);bl.s.forEach(sk=>applyFx(p,sk[4]));buySound();log(`🧩 ${p.name} собрал сет ${bl.n}!`);}}}}
+  } else if(owner!==p){pay(p,c.fee);owner.coins+=c.fee;log(`💸 ${p.name} платит ${c.fee} → ${owner.name}`);}
+ } else if(c.t=='coin'){const d2=1+Math.floor(Math.random()*6);const g=d2%2==0?100:50;p.coins+=g;log(`🪙 Монета: +${g}`);}
+ else if(c.t=='stash'){ const dr=DECKS.taj.shift();DECKS.taj.push(dr); const num=dr[0],td=dr[1]; const[t,fx]=td; playCardSnd('taj',num);
+  const m=modal(`<h2>🟣 ТАЙНИК</h2><div class="vimg" id="vimg">🟣</div><div class="vtext" style="flex:0;padding:4px">«${t}»</div><button data-v="ok">OK</button>`);
+  loadCardArt('taj',num,u=>{const w=document.getElementById('vimg'); if(w&&u)w.innerHTML='<img src="'+u+'">';});
+  await m; applyFx(p,fx);log(`🟣 ${p.name}: тайник (карта №${num})`);}
+ else if(c.t=='shop'){await openShop(p);}
+ else if(c.t=='tunnel'){ if(p.sus<5){p.pos=0;p.coins+=200;log(`🚇 ${p.name} → СТАРТ`);}else{p.pos=24;p.sus=0;p.skipN=(p.skipN||0)+1;playSnd('police',3000);log(`🚇 ${p.name} → ПОЛИЦЕЙСКИЙ УЧАСТОК`);}}
+ else if(c.t=='police'){p.sus=0;p.skipN=(p.skipN||0)+1;p.vPol=true;playSnd('police',3000);log(`🚔 ${p.name}: подозрения сняты, ход пропущен`);}
+ else if(c.t=='roof'){p.vRoof=true;playSnd('roof',3000);}
+ else if(c.t=='crime'){p.vCrime=true;playSnd('crime',3000);addSus(pick(p,'ANY'),1,'преступление');}
+ if(p.sus>=10&&p.pos!=24){ if(!p.avoid&&p.coins>=500){const v=await modal(`<h2>🚨 10+ подозрений!</h2>Заплатить 500 и избежать участка? (1 раз за игру)<br><br><button data-v="yes">Да</button> <button data-v="no">Нет</button>`);
+  if(v=='yes'){p.avoid=true;p.coins-=500;}else{p.pos=24;p.skipN=(p.skipN||0)+1;playSnd('police',3000);log(`🚔 ${p.name} принудительно в участке`);}}
+  else{p.pos=24;p.skipN=(p.skipN||0)+1;playSnd('police',3000);log(`🚔 ${p.name} принудительно в участке`);}}
+ render();}
+const DECKCOL={witness:'#c62828',alibi:'#2e7d32',ulika:'#1565c0',dopros:'#f9a825',zasada:'#37474f'};
+const DECKICO={witness:'👁',alibi:'⏳',ulika:'🔍',dopros:'🎤',zasada:'💣'};
+const DECKNAME={witness:'СВИДЕТЕЛЬ',alibi:'АЛИБИ',ulika:'УЛИКА',dopros:'ДОПРОС',zasada:'ЗАСАДА'};
+async function useChip(k){ const p=S.players[S.cur]; if(S.busy)return;
+ if(p.chips[k]<=0){await modal(`<h2>❌ Фишка «${DECKNAME[k]}» закончилась</h2><button data-v="ok">OK</button>`);return;}
+ if(S.chipUsed){await modal(`<h2>⏳ Фишка уже использована в этот ход</h2>Следующая — в твой следующий ход.<br><br><button data-v="ok">OK</button>`);return;}
+ p.chips[k]--;p.usedChip=true;S.lastChip=p;S.chipUsed=p.chipDouble?false:true; if(p.chipDouble){p.chipDouble=false;log('⚗ Фишка сработает дважды!');}
+ const draw=DECKS[k].shift();DECKS[k].push(draw); const num=draw[0], data=draw[1]; playCardSnd(k,num);
+ let text='',eff='';
+ if(k=='witness'){const[t,tg,c]=data;const g=pick(p,tg);text=t;eff=`🚨 +1 на ${g.name} · 💰 +${c}`;addSus(g,1,'свидетель');p.coins+=c;}
+ if(k=='alibi'){const[t,s]=data;text=t;eff=`🚨 −${s} у себя · 💰 +400 · → СТАРТ`;addSus(p,-s,'алиби');p.coins+=400;p.pos=0;}
+ if(k=='ulika'||k=='dopros'){const[t,tg,s,c]=data;const g=pick(p,tg);text=t;eff=`🚨 +${s} на ${g.name} · 💰 −${c}`;addSus(g,s,k);pay(p,c);}
+ if(k=='zasada'){const[t,tg,s,c]=data;text=t; if(tg=='SELF'){ eff='🕶 −1 у себя · 💰 −'+c; addSus(p,-1,'скрытность'); } else { const g=pick(p,tg); if(g.protZ>0){g.protZ--;eff=`🛡 ${g.name} защитился от Засады! · 💰 −${c}`;log('🛡 Защита от Засады!');} else {eff=`🚨 +${s} на ${g.name} · 💰 −${c}`; addSus(g,s,'засада');} } pay(p,c);}
+ const m=modal(`<div class="vcard"><span class="rar" style="background:${DECKCOL[k]}">${DECKICO[k]} ${DECKNAME[k]}</span><div class="vimg" id="vimg">${DECKICO[k]}</div><div class="vtext">«${text}»</div><div class="veff">${eff}</div><button data-v="ok">OK</button></div>`);
+ loadCardArt(k,num,u=>{const w=document.getElementById('vimg'); if(w&&u)w.innerHTML='<img src="'+u+'">';});
+ await m;
+ render();}
+async function endTurn(){ $('#end').disabled=true;$('#roll').disabled=false;S.chipUsed=false;
+ const n=S.players.length; let guard=0;
+ while(guard++<n+2){ S.cur=(S.cur+1)%n;
+  if(S.cur==0){S.round++; if(S.round>20)return win('murderer','Лимит 20 раундов исчерпан — Убийца не раскрыт!'); await investigation();}
+  const q=S.players[S.cur];
+  if((q.skipN||0)>0){q.skipN--;log(`💤 ${q.name} пропускает ход`);render();continue;}
+  break;}
+ render();}
+async function investigation(){ log('⚖ Фаза расследования');
+ for(const p of S.players){ if(p.tokens<=0||p.muted||p.discred)continue;
+  const html=()=>`<h2>⚖ ${p.name}</h2>Жетонов: ${p.tokens}. Повесить подозрение:<br>`+others(p).map((q,i)=>`<button data-v="${i}">🚨 ${q.name} (${q.sus})</button> `).join('')+`<br><br><button data-v="skip">Готово</button>`;
+  while(p.tokens>0){const v=await modal(html()); if(v=='skip')break; const q=others(p)[+v];p.tokens--;addSus(q,1,'жетон '+p.name); render(); if(check15())return;} }
+ const shp=S.players.find(q=>q.role==='sheriff'&&!q.discred);
+ if(shp){const targets=others(shp).filter(q=>q.sus>=10);
+  if(targets.length){const v=await modal(`<h2>🚔 Шериф</h2>Обвинить (10+ подозрений)?<br>${targets.map((q,i)=>`<button data-v="${i}">${q.name} (${q.sus})</button> `).join('')}<br><button data-v="no">Нет</button>`);
+   if(v!='no'){const t=targets[+v];let yes=0;for(const q of S.players){ if((q.sus>=15&&q.role!=='murderer')||q.muted||q.discred)continue; const a=await modal(`<h2>Голосование</h2>${q.name}: виновен ли ${t.name}?<br><br><button data-v="y">ДА</button> <button data-v="n">НЕТ</button>`);if(a=='y')yes++;}
+    if(yes>S.players.length/2){ if(t.role==='murderer')return win('detectives',`Обвинение верно! ${t.name} — Убийца!`);
+     else{addSus(shp,2,'ложное обвинение');pay(shp,200);log('❌ Ложное обвинение!');}}
+    else log('🗳 Обвинение отклонено');}}}}
+function checkWin(){ const m=S.players.find(q=>q.role==='murderer'); if(m&&m.sus>=15){win('detectives','15 подозрений — Убийца раскрыт!');return true;} return false;}
+function win(side,why){ modal(`<h1>${side==='detectives'?'🚔 ПОБЕДА ДЕТЕКТИВОВ!':'🔪 ПОБЕДА УБИЙЦЫ!'}</h1>${why}<br><small>${BRAND} · Специально для канала MamPap&Alica</small><br><br><button onclick="location.reload()">Сыграть ещё</button>`); return true;}
+/* ── ПРЕВЬЮ: скины, стопки (со звуком), спецклетки (картинка + приглушение + звук) ── */
+(function(){const CHIPN={witness:'Свидетель',alibi:'Алиби',ulika:'Улика',dopros:'Допрос',zasada:'Засада'};
+let cur=-1,hLast=-1;
+const SPEC_SND={tunnel:'tunnel',roof:'roof',crime:'crime',police:'police',start:'start',shop:'shop'};
+const STACKINFO={
+ witness:{icon:'👁',name:'СВИДЕТЕЛЬ',col:'#c62828',what:'Карта указывает на игрока и вешает <b>+1 подозрение</b>, а тебе даёт <b>+20…+50 монет</b>. Свидетель что-то видел — и делится этим с городом!',when:'В свой ход, 1 раз за ход (нажми стопку). Тематически — на «Полицейском участке», при встрече двух игроков — любая.'},
+ alibi:{icon:'⏳',name:'АЛИБИ',col:'#2e7d32',what:'Снимает с тебя <b>−1 подозрение</b> («Я спал» — <b>−2</b>), даёт <b>+400 монет</b> и возвращает на «Старт». Лучший способ оправдаться!',when:'В свой ход, 1 раз за ход. Спасает, когда на тебе много подозрений.'},
+ ulika:{icon:'🔍',name:'УЛИКА',col:'#1565c0',what:'Вешает на цель <b>+1 или +2 подозрения</b>, но расследование стоит денег: ты платишь <b>−20…−60 монет</b>. Вещдок не врёт!',when:'В свой ход, 1 раз за ход. Тематически — на «Крыше небоскрёба» и «Преступлении».'},
+ dopros:{icon:'🎤',name:'ДОПРОС',col:'#f9a825',what:'Давление на подозреваемого: <b>+1 или +2 подозрения</b> на цель, ты платишь <b>−20…−60 монет</b>. Под лампой правда выходит наружу!',when:'В свой ход, 1 раз за ход. Тематически — на «Полицейском участке».'},
+ zasada:{icon:'💣',name:'ЗАСАДА',col:'#37474f',what:'Удар из тени: <b>+1 или +2 подозрения</b> на цель (иногда <b>−1 у себя</b>), ты платишь <b>−100…−150 монет</b>. Рискованно, но больно!',when:'В свой ход, 1 раз за ход. От Засады защищает амулет из «Тайника».'}};
+const SPECINFO={
+ tunnel:{icon:'🚇',name:'ТОННЕЛЬ МЕТРО',col:'#546e7a',text:'<b>&lt; 5 подозрений</b> → переход на «Старт» (+200 монет). <b>≥ 5</b> → в «Полицейский участок»: подозрения снимаются, но ход пропускается.',when:'Срабатывает автоматически при попадании.'},
+ roof:{icon:'🏙',name:'КРЫША НЕБОСКРЁБА',col:'#8e1414',text:'Здесь можно использовать фишки <b>«Алиби» или «Улика»</b> (в цифровой версии — любая фишка в свой ход). Вид на весь город — отличное место, чтобы оправдаться.',when:'При попадании на клетку.'},
+ crime:{icon:'👣',name:'ПРЕСТУПЛЕНИЕ',col:'#8e1414',text:'При попадании игра назначает <b>+1 подозрение</b> случайному игроку. Можно использовать «Алиби» или «Улика».',when:'Срабатывает при попадании.'},
+ police:{icon:'🚔',name:'ПОЛИЦЕЙСКИЙ УЧАСТОК',col:'#1a3f8f',text:'Попадание: <b>все подозрения снимаются</b>, но ход пропускается. 5–9 подозрений — пропуск при попадании; <b>10+</b> — принудительный переход (1 раз можно избежать за 500). Штраф 200 монет = −1 подозрение.',when:'При попадании и при 10+ подозрениях.'},
+ start:{icon:'🟢',name:'СТАРТ',col:'#2e7d32',text:'Прохождение или попадание на «Старт» даёт <b>+200 монет</b> и <b>−1 подозрение</b> у себя. Шанс перевести дух и пополнить кошелёк!',when:'Срабатывает при прохождении круга и при попадании.'},
+ shop:{icon:'🟠',name:'МАГАЗИН СКИНОВ',col:'#e65100',text:'Тянешь <b>6 карт скинов</b> и бросаешь кубик: выпавшее число указывает скин, который можно купить (если хватает монет). Остальные уходят в низ колоды.',when:'При попадании — автоматически; клик — когда фишка стоит на этой клетке.'}};
+function fxText(fx){if(!fx)return'—';const out=[],cnt={};(fx.chips||[]).forEach(k=>cnt[k]=(cnt[k]||0)+1);
+for(const k in cnt)out.push('+'+cnt[k]+' '+CHIPN[k]);
+if(fx.inc)out.push('+'+fx.inc+' монет/круг');if(fx.sus)out.push(fx.sus+' подозрения');
+if(fx.susSelf)out.push(fx.susSelf+' у себя');if(fx.protZ)out.push('защита от Засады');
+if(fx.protF)out.push('защита от штрафа');if(fx.susP)out.push('+'+fx.susP+' подозрения на игрока');
+return out.length?out.join(', '):'—';}
+const pv=document.getElementById('preview'),box=pv.querySelector('.pv');
+function hide(){pv.classList.remove('on');cur=-1;duckMusic(false);}
+window.hidePreview=hide;
+function showStack(k){const d=STACKINFO[k];if(!d)return;if(cur==='stack'+k)return;cur='stack'+k;
+box.innerHTML='<span class="rar" style="background:'+d.col+'">'+d.icon+' '+d.name+'</span>'+
+'<div class="row" style="font-size:11px;line-height:1.5;text-align:left;padding:4px 8px">'+d.what+'</div>'+
+'<div class="row" style="font-size:11px;line-height:1.5;text-align:left;padding:4px 8px"><b>Когда использовать:</b> '+d.when+'</div>'+
+'<div class="row" style="font-size:9.5px;padding:2px 8px">🔊 Озвучка: snd/card_'+k+'_номер.* · 🖼 Картинка: img/cards/'+k+'_номер.*</div>';
+pv.classList.add('on');}
+function showSpec(t){const d=SPECINFO[t];if(!d)return;if(cur==='spec'+t)return;cur='spec'+t;
+const key=SLUG[t]||t;
+box.innerHTML='<span class="rar" style="background:'+d.col+'">'+d.icon+' '+d.name+'</span>'+
+'<div class="imgw" id="specimg">'+d.icon+'</div>'+
+'<div class="row" style="font-size:10.5px;line-height:1.45;text-align:left;padding:2px 8px">'+d.text+'</div>'+
+'<div class="row" style="font-size:10.5px;line-height:1.45;text-align:left;padding:2px 8px"><b>Когда:</b> '+d.when+'</div>';
+pv.classList.add('on');
+loadImgAny(['img/cells/'+key,'img/icons/'+key,'img/'+key],u=>{const w=document.getElementById('specimg');if(w&&u)w.innerHTML='<img src="'+u+'">';});
+duckMusic(true); playSnd(SPEC_SND[t]||t,4000);}
+function show(i,c){if(cur===i)return;cur=i;const bl=BLOCKS[c.bi],key=slug(c.n);
+const own=OWN[i]!=null?S.players[OWN[i]]:null;
+box.innerHTML='<span class="rar" style="background:'+bl.c+'">'+bl.n+'</span><h3>'+c.n+'</h3><div class="imgw">🗡</div>'+
+(own?'<div class="row">👑 Владелец: <b>'+own.name+'</b></div>':'')+
+'<div class="row">Цена: <b>'+c.price+'</b> · Плата: <b>'+c.fee+'</b></div>'+
+'<div class="row">Эффект: <b>'+fxText(bl.s[c.b][3])+'</b></div>'+
+'<div class="row">Сет за <b>'+bl.cost+'</b>: '+fxText(bl.s[c.b][4])+'</div>';
+pv.classList.add('on');
+const put=u=>{const w=box.querySelector('.imgw');if(w)w.innerHTML='<img src="'+u+'">';};
+if(IMG_CACHE[key])put(IMG_CACHE[key]);else loadImg('img/cells/'+key,u=>{if(u){IMG_CACHE[key]=u;if(cur===i)put(u);}});}
+window.previewSkin=name=>{const i=CELLS.findIndex(x=>x.t=='skin'&&x.n==name);if(i>=0)show(i,CELLS[i]);};
+const b=document.getElementById('board');
+b.addEventListener('mouseover',e=>{
+ const st=e.target.closest('.stack');
+ if(st){ const k=st.dataset.k;
+  if(hLast!=='st'+k){hLast='st'+k; if(SND_CACHE['hover'])playSnd('hover'); else tick();}
+  showStack(k); return; }
+ const cl=e.target.closest('.cell');if(!cl)return;const i=+cl.dataset.i;
+ if(i!=hLast){hLast=i; if(SND_CACHE['hover'])playSnd('hover'); else tick();}
+ const t=CELLS[i].t;
+ if(SPECINFO[t])showSpec(t);
+ else if(cl.classList.contains('skin'))show(i,CELLS[i]);});
+b.addEventListener('mouseout',e=>{
+ const st=e.target.closest('.stack');
+ if(st&&(!e.relatedTarget||!st.contains(e.relatedTarget)))hide();
+ const cl=e.target.closest('.cell');
+ if(cl&&!cl.contains(e.relatedTarget)){ const t=CELLS[+cl.dataset.i].t; if(cl.classList.contains('skin')||SPECINFO[t])hide(); }});
+b.addEventListener('mouseleave',hide);
+const pl=document.getElementById('players');
+pl.addEventListener('mouseover',e=>{const s=e.target.closest('.sk[data-skin]');if(s)window.previewSkin(s.dataset.skin);});
+pl.addEventListener('mouseout',e=>{const s=e.target.closest('.sk[data-skin]');if(s&&(!e.relatedTarget||!s.contains(e.relatedTarget)))hide();});
+})();
+</script>
+</body>
+</html>

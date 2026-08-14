@@ -1,0 +1,13 @@
+cells/
+         ├─ start.*             ← СТАРТ
+         ├─ moneta.*            ← МОНЕТА
+         ├─ krysha.*            ← КРЫША НЕБОСКРЁБА
+         ├─ prestuplenie.*      ← ПРЕСТУПЛЕНИЕ
+         ├─ police.*            ← ПОЛИЦЕЙСКИЙ УЧАСТОК
+         ├─ tunnel.*            ← ТОННЕЛЬ МЕТРО
+         ├─ stash.*             ← ТАЙНИК
+         ├─ shop.*              ← МАГАЗИН СКИНОВ
+         └─ 24 скина: wooden_knife.*, stone_dagger.*, iron_blade.*,
+            rusty_sword.*, bronze_dagger.*, steel_knife.*, blue_claw.*,
+            steel_fang.*, crystal_shard.*, viper_fang.*, shadow_cloak.*,
+            phantom_blade.*, blaze

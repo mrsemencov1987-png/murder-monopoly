@@ -1,0 +1,24 @@
+img/icons/
+├── suspect.png        # 🎭 подозрение (заменяет эмодзи)
+├── witness.png        # 👁 свидетель
+├── alibi.png          # ⏳ алиби
+├── ulika.png          # 🔍 улика
+├── dopros.png         # 🎤 допрос
+├── zasada.png         # 💣 засада
+├── coin.png           # 🪙 монета
+├── start.png          # 🏁 старт
+├── police.png         # 🚔 полиция
+├── roof.png           # 🏢 крыша
+├── crime.png          # 🔪 преступление
+├── stash.png          # 📦 тайник
+├── shop.png           # 🛒 магазин
+├── sheriff.png        # 🚔 шериф
+├── murderer.png       # 🔪 убийца
+├── civilian.png       # 😇 невинный
+├── dice1.png          # ⚀ кубик 1
+├── dice2.png          # ⚁ кубик 2
+├── dice3.png          # ⚂ кубик 3
+├── dice4.png          # ⚃ кубик 4
+├── dice5.png          # ⚄ кубик 5
+├── dice6.png          # ⚅ кубик 6
+└── dice.png           # 🎲 кубик по умолчанию
