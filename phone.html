@@ -60,13 +60,13 @@
 </div>
 <script>
 window.onerror = function (m) { document.getElementById('status').textContent = '❌ JS: ' + m; };
+var MM_NTFY = 'https://ntfy.sh';
 var ROLN = { sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civilian: '🕊 МИРНЫЙ', cop: '🦹 ПРОДАЖНЫЙ КОП' };
 var st = document.getElementById('status');
 var rdata = (location.hash.match(/r=([^&]+)/) || [])[1];
 var room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
-var bIdx = parseInt(((location.hash.match(/b=(\d+)/) || [])[1] || '0'), 10);
 var myName = null, cli = null;
-function send(d) { if (cli && room) cli.publish('mm145/' + room + '/up', JSON.stringify({ name: myName, d: d })); }
+function send(d) { if (cli && room) cli.publish('mm145_' + room + '_up', JSON.stringify({ name: myName, d: d })); }
 function showRole(d) {
   myName = d.n;
   st.textContent = '🤫 Это твой секрет — никому не показывай!';
@@ -75,6 +75,7 @@ function showRole(d) {
   r.textContent = ROLN[d.r] || d.r;
   var w = document.getElementById('who'); w.style.display = 'block'; w.textContent = 'Ты играешь за: ' + d.n;
 }
+function onMsg(e) { try { var o = JSON.parse(e.data); handle(JSON.parse(o.message)); } catch (err) {} }
 function handle(d) {
   if (d.type === 'role') showRole({ n: d.name, r: d.role, c: d.color });
   if (d.type === 'state') {
@@ -128,39 +129,14 @@ if (rdata) {
   try { showRole(JSON.parse(decodeURIComponent(escape(atob(rdata))))); }
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
 }
-var MM_BROKERS = ['wss://mqtt.eclipseprojects.io:443/mqtt', 'wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt'];
-function boot() {
-  var order = [MM_BROKERS[bIdx]].concat(MM_BROKERS.filter(function (x, i) { return i !== bIdx; })).filter(Boolean);
-  var tryUrl = function (i) {
-    if (i >= order.length) { st.textContent = '📴 Все брокеры резаны — роль офлайн.'; return; }
-    var c = mqtt.connect(order[i], { clientId: 'ph' + Math.random().toString(36).slice(2, 8), reconnectPeriod: 3000, connectTimeout: 5000, keepalive: 30 });
-    var to = setTimeout(function () { c.end(true); tryUrl(i + 1); }, 5000);
-    c.on('connect', function () {
-      clearTimeout(to);
-      cli = c;
-      cli.subscribe('mm145/' + room + '/down/all');
-      if (myName) cli.subscribe('mm145/' + room + '/down/' + myName);
-      cli.publish('mm145/' + room + '/up', JSON.stringify({ type: 'hello', name: myName }));
-      st.textContent = '🔗 На связи с городом: пульт активен.';
-    });
-    c.on('reconnect', function () { st.textContent = '📡 переподключение…'; });
-    c.on('close', function () { if (cli === c) st.textContent = '📡 связь потеряна, переподключение…'; });
-    c.on('error', function () { clearTimeout(to); c.end(true); tryUrl(i + 1); });
-    c.on('message', function (t, p) { try { handle(JSON.parse(p.toString())); } catch (e) {} });
-  };
-  tryUrl(0);
-}
-  tryUrl(0);
-}
 if (room) {
-  if (window.mqtt) { boot(); }
-  else {
-    var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/mqtt@5.7.0/dist/mqtt.min.js';
-    s.onload = boot;
-    s.onerror = function () { st.textContent = '📴 Нет MQTT-библиотеки — роль офлайн.'; };
-    document.head.appendChild(s);
-  }
+  cli = { publish: function (t, s) { fetch(MM_NTFY + '/' + t, { method: 'POST', body: s }); } };
+  var esAll = new EventSource(MM_NTFY + '/mm145_' + room + '_down_all/sse');
+  esAll.onmessage = onMsg;
+  esAll.onerror = function () { st.textContent = '📡 переподключение…'; };
+  if (myName) { var esMe = new EventSource(MM_NTFY + '/mm145_' + room + '_down_' + myName + '/sse'); esMe.onmessage = onMsg; }
+  cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName }));
+  st.textContent = '🔗 На связи с городом: пульт активен.';
 } else if (!rdata) {
   st.textContent = '❌ Нет данных — отсканируй QR заново.';
 }
