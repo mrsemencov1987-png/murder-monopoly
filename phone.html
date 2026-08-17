@@ -3,15 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ММ — твоя роль</title>
+<title>ММ — твой экран</title>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
-  body{margin:0;background:#0a0e20;color:#dfe6ff;font-family:Segoe UI,Arial;display:flex;min-height:100vh;align-items:center;justify-content:center}
-  .card{width:min(92vw,380px);border:3px solid #d4af37;border-radius:16px;padding:22px;text-align:center;background:linear-gradient(160deg,#141a35,#0a0e20);box-shadow:0 0 40px rgba(212,175,55,.35)}
-  h1{color:#d4af37;letter-spacing:2px;font-size:18px}
-  #role{font-size:26px;font-weight:900;margin:10px 0}
-  #desc{font-size:13px;line-height:1.5;opacity:.85}
-  #status{margin-top:14px;font-size:12px;color:#8a93af}
+  body{margin:0;background:#0a0e20;color:#dfe6ff;font-family:Segoe UI,Arial;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box}
+  .card{width:min(94vw,400px);border:3px solid #d4af37;border-radius:16px;padding:16px;background:linear-gradient(160deg,#141a35,#0a0e20);box-shadow:0 0 40px rgba(212,175,55,.3)}
+  h1{color:#d4af37;font-size:16px;letter-spacing:2px;text-align:center;margin:0 0 8px}
+  #role{font-size:24px;font-weight:900;text-align:center;margin:6px 0}
+  #event{min-height:38px;background:rgba(255,255,255,.06);border:1px solid rgba(212,175,55,.35);border-radius:10px;padding:8px;font-size:13px;text-align:center;margin:8px 0}
+  .row{display:flex;justify-content:space-between;font-size:14px;padding:3px 2px}
+  .row b{color:#ffd54f}
+  #turn{text-align:center;font-size:13px;color:#8a93af;margin-top:8px}
+  #status{font-size:11px;color:#8a93af;text-align:center;margin-top:8px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+  .stat{background:rgba(255,255,255,.05);border-radius:8px;padding:6px;text-align:center;font-size:12px}
+  .stat b{display:block;font-size:16px;color:#ffd54f}
 </style>
 </head>
 <body>
@@ -19,30 +25,55 @@
   <h1>🕵️ MURDER MONOPOLY</h1>
   <div id="status">Подключение к городу…</div>
   <div id="role" style="display:none"></div>
-  <div id="desc" style="display:none"></div>
+  <div id="event" style="display:none"></div>
+  <div id="dash" style="display:none">
+    <div class="grid">
+      <div class="stat">Монеты<b id="s-coins">0</b></div>
+      <div class="stat">Подозрения<b id="s-sus">0</b></div>
+      <div class="stat">Усталость<b id="s-fat">0</b></div>
+      <div class="stat">Страх<b id="s-fear">0</b></div>
+    </div>
+    <div class="row"><span>🎟 Жетоны</span><b id="s-tok">0</b></div>
+    <div id="turn"></div>
+  </div>
 </div>
 <script>
 const room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
 const st = document.getElementById('status');
-if (!room) { st.textContent = '❌ Нет комнаты в ссылке — отсканируй QR заново.'; }
+let myName = null;
+if (!room) st.textContent = '❌ Нет комнаты — отсканируй QR заново.';
 else {
   const peer = new Peer();
   peer.on('open', () => { st.textContent = '📡 Ищу город…'; peer.connect(room, { reliable: true }); });
-  peer.on('error', e => { st.textContent = '❌ Ошибка связи: ' + e.type; });
+  peer.on('error', e => { st.textContent = '❌ Ошибка: ' + e.type; });
   peer.on('connection', conn => {
     conn.on('open', () => { st.textContent = '🔗 Подключено! Жду роль…'; });
     conn.on('data', d => {
       if (d.type === 'role') {
-        st.textContent = '🤫 Это твой секрет. Не показывай никому!';
+        myName = d.name;
+        st.textContent = '🤫 Это твой секрет — никому не показывай!';
         const r = document.getElementById('role');
         r.style.display = 'block';
         r.style.color = d.color || '#ffd54f';
-        r.textContent = ({ sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civilian: '🕊 МИРНЫЙ', cop: '🦹 ПРОДАЖНЫЙ КОП' })[d.role] || d.role;
-        const desc = document.getElementById('desc');
-        desc.style.display = 'block';
-        desc.textContent = 'Ты играешь за: ' + d.name;
+        r.textContent = ({sheriff:'🚔 ШЕРИФ',murderer:'🔪 УБИЙЦА',civilian:'🕊 МИРНЫЙ',cop:'🦹 ПРОДАЖНЫЙ КОП'})[d.role] || d.role;
+        document.getElementById('event').style.display = 'block';
+        document.getElementById('dash').style.display = 'block';
       }
-      if (d.type === 'text') st.textContent = d.text;
+      if (d.type === 'state') {
+        const ev = document.getElementById('event');
+        ev.style.display = 'block';
+        ev.textContent = d.lastLog || '…';
+        document.getElementById('turn').textContent = 'Раунд ' + d.round + ' · ходит: ' + d.turn;
+        const me = d.players.find(p => p.name === myName);
+        if (me) {
+          document.getElementById('s-coins').textContent = me.coins;
+          document.getElementById('s-sus').textContent = me.suspect;
+          document.getElementById('s-fat').textContent = me.fatigue;
+          document.getElementById('s-fear').textContent = me.fear;
+          document.getElementById('s-tok').textContent = me.tokens;
+        }
+      }
+      if (d.type === 'text') { const ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.text; }
     });
     conn.on('close', () => { st.textContent = '📴 Связь с городом потеряна.'; });
   });
