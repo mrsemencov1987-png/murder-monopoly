@@ -4904,3 +4904,30 @@ async function mmStartPc145() {
   });
   return room;
 }
+// ============================================
+// ДОПОЛНЕНИЕ v148 — НАДЁЖНАЯ ТРАНСЛЯЦИЯ СОСТОЯНИЯ НА ТЕЛЕФОНЫ
+// ============================================
+function qrState138() {
+  try {
+    if (!S || !mmBus145 || !Object.keys(mmBus145.joined).length) return;
+    const now = Date.now();
+    if (now - (window._mm148t || 0) < 800) return;
+    window._mm148t = now;
+    const cur = S.players[S.cur] || {};
+    const logEl = document.querySelector('#log div, .log div, .log-line, .chronicle div');
+    qrBroadcast138({
+      type: 'state',
+      round: S.round || S.turnCount || 1,
+      turn: cur.name || '',
+      lastLog: logEl ? logEl.textContent.trim() : '',
+      players: S.players.map(p => ({
+        name: p.name,
+        coins: p.coins != null ? p.coins : p.money,
+        suspect: p.suspect != null ? p.suspect : p.suspicion,
+        fatigue: p.fatigue != null ? p.fatigue : p.tired,
+        fear: p.fear != null ? p.fear : p.scared,
+        tokens: p.tokens != null ? p.tokens : 0
+      }))
+    });
+  } catch (e) {}
+}
