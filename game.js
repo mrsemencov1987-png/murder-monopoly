@@ -4880,7 +4880,7 @@ function mmConnect147(url, prefix) {
     c.on('error', e => { clearTimeout(t); c.end(true); rej(e); });
   });
 }
-const MM_BROKERS147 = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
+const MM_BROKERS147 = ['wss://mqtt.eclipseprojects.io:443/mqtt', 'wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
 async function mmStartPc145() {
   await mmLoad145();
   const room = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
