@@ -4803,3 +4803,65 @@ function loadPeerJS135() {
     next();
   });
 }
+// ============================================
+// ДОПОЛНЕНИЕ v145 — ЖИВОЙ КАНАЛ ЧЕРЕЗ MQTT (вместо PeerJS/WebRTC)
+// ============================================
+let mmBus145 = null;
+function mmLoad145() {
+  return new Promise((res, rej) => {
+    if (window.mqtt) return res();
+    const urls = ['https://cdn.jsdelivr.net/npm/mqtt@5.7.0/dist/mqtt.min.js', 'https://unpkg.com/mqtt@5.7.0/dist/mqtt.min.js'];
+    let i = 0;
+    const next = () => { if (i >= urls.length) return rej(new Error('no mqtt')); const s = document.createElement('script'); s.src = urls[i++]; s.onload = () => window.mqtt ? res() : next(); s.onerror = next; document.head.appendChild(s); };
+    next();
+  });
+}
+async function mmStartPc145() {
+  await mmLoad145();
+  const room = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
+  const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', { clientId: 'pc' + Math.random().toString(36).slice(2, 8), reconnectPeriod: 5000 });
+  await new Promise((res, rej) => { const t = setTimeout(() => rej(new Error('mqtt timeout')), 6000); client.on('connect', () => { clearTimeout(t); res(); }); client.on('error', rej); });
+  client.subscribe('mm145/' + room + '/up');
+  mmBus145 = { client: client, room: room, joined: {} };
+  client.on('message', (topic, payload) => {
+    try {
+      const m = JSON.parse(payload.toString());
+      if (m.type === 'hello' && m.name) {
+        mmBus145.joined[m.name] = true;
+        const p = S && S.players.find(x => x.name === m.name);
+        if (p) mmSend145(m.name, { type: 'role', name: p.name, role: p.role, color: p.color });
+        console.log('📱 Телефон подключился:', m.name);
+      } else if (m.name && m.d) phoneCmd141(m.d, { _mmName: m.name });
+    } catch (e) {}
+  });
+  return room;
+}
+function mmSend145(name, obj) { if (mmBus145) mmBus145.client.publish('mm145/' + mmBus145.room + '/down/' + name, JSON.stringify(obj)); }
+function qrBroadcast138(msg) { if (mmBus145) mmBus145.client.publish('mm145/' + mmBus145.room + '/down/all', JSON.stringify(msg)); }
+function qrAnyOpen138() { return !!(mmBus145 && Object.keys(mmBus145.joined).length); }
+async function qrSeq111(oldHtml) {
+  try { await loadQRious137(); } catch (e) {}
+  let room = '';
+  try { room = await mmStartPc145(); console.log('🌐 Комната MQTT создана:', room); } catch (e) { console.log('❌ MQTT не завёлся:', e && e.message); }
+  const base = location.href.split('#')[0].replace(/[^/]*$/, '') + 'phone.html';
+  const list = S.players.filter(p => !p.isBot);
+  const items = list.map(p => {
+    let src = '';
+    try {
+      const link = base + '#r=' + btoa(unescape(encodeURIComponent(JSON.stringify({ n: p.name, r: p.role, c: p.color })))) + (room ? '&room=' + room : '');
+      src = new QRious({ value: link, size: 460, level: 'M' }).toDataURL();
+    } catch (e) {}
+    return { name: p.name, src: src };
+  }).filter(x => x.src);
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    await _sm111('<h2>📱 ' + it.name + ' — отсканируй свою роль</h2>' +
+      '<p>Передай устройство игроку <b>' + it.name + '</b>. Остальные — не подглядывать!</p>' +
+      '<div style="display:flex;justify-content:center;padding:14px"><div style="background:#fff;padding:14px;border-radius:16px;box-shadow:0 0 40px rgba(212,175,55,.45)">' +
+      '<img src="' + it.src + '" style="width:min(430px,72vw);height:auto;display:block">' +
+      '<div style="color:#000;text-align:center;font-weight:900;letter-spacing:2px;font-size:20px;padding-top:8px">' + it.name + '</div></div></div>' +
+      '<p style="text-align:center;opacity:.6;font-size:12px">Плашка ' + (i + 1) + ' из ' + items.length + ' · роль и пульт откроются на телефоне</p>' +
+      '<button data-v="next">✅ ' + it.name + ' отсканировал — дальше</button>');
+  }
+  return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p style="opacity:.7">Город просыпается…</p><button data-v="go">🎲 Начать!</button>');
+}
