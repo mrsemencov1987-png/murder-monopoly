@@ -4985,3 +4985,36 @@ async function qrSeq111(oldHtml) {
   }
   return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p style="opacity:.7">Город просыпается…</p><button data-v="go">🎲 Начать!</button>');
 }
+// ============================================
+// ДОПОЛНЕНИЕ v150 — ЧИСЛА ВМЕСТО [object Object] НА ТЕЛЕФОНЕ
+// ============================================
+function num150(v) {
+  if (typeof v === 'number') return v;
+  if (v && typeof v.get === 'function') return v.get();
+  if (v && typeof v.value === 'number') return v.value;
+  return 0;
+}
+function qrState138() {
+  try {
+    if (!S || !mmBus145 || !Object.keys(mmBus145.joined).length) return;
+    const now = Date.now();
+    if (now - (window._mm148t || 0) < 800) return;
+    window._mm148t = now;
+    const cur = S.players[S.cur] || {};
+    const logEl = document.querySelector('#log div, .log div, .log-line, .chronicle div');
+    qrBroadcast138({
+      type: 'state',
+      round: S.round || S.turnCount || 1,
+      turn: cur.name || '',
+      lastLog: logEl ? logEl.textContent.trim() : '',
+      players: S.players.map(p => ({
+        name: p.name,
+        coins: num150(p.coins != null ? p.coins : p.money),
+        suspect: num150(p.suspect),
+        fatigue: num150(p.fatigue),
+        fear: num150(p.fear),
+        tokens: num150(p.tokens)
+      }))
+    });
+  } catch (e) {}
+}
