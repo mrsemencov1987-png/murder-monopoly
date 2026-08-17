@@ -4869,3 +4869,38 @@ async function qrSeq111(oldHtml) {
 // ДОПОЛНЕНИЕ v146 — УБИРАЮ ХВОСТ PEERJS: ПЛАШКИ+MQTT СРАЗУ, БЕЗ 7 СЕКУНД ОЖИДАНИЯ
 // ============================================
 window.showQRScreen = function () { return qrSeq111(''); };
+// ============================================
+// ДОПОЛНЕНИЕ v147 — ПЕРЕБОР БРОКЕРОВ: HIVEMQ → EMQX → MOSQUITTO
+// ============================================
+function mmConnect147(url, prefix) {
+  return new Promise((res, rej) => {
+    const c = mqtt.connect(url, { clientId: prefix + Math.random().toString(36).slice(2, 8), reconnectPeriod: 60000, connectTimeout: 5000 });
+    const t = setTimeout(() => { c.end(true); rej(new Error('timeout ' + url)); }, 5000);
+    c.on('connect', () => { clearTimeout(t); res(c); });
+    c.on('error', e => { clearTimeout(t); c.end(true); rej(e); });
+  });
+}
+const MM_BROKERS147 = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
+async function mmStartPc145() {
+  await mmLoad145();
+  const room = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
+  let client = null;
+  for (const u of MM_BROKERS147) {
+    try { client = await mmConnect147(u, 'pc'); console.log('🌐 Брокер ПК:', u); break; } catch (e) { console.log('⚠️ Брокер не ответил:', u); }
+  }
+  if (!client) throw new Error('all brokers dead');
+  client.subscribe('mm145/' + room + '/up');
+  mmBus145 = { client: client, room: room, joined: {} };
+  client.on('message', (topic, payload) => {
+    try {
+      const m = JSON.parse(payload.toString());
+      if (m.type === 'hello' && m.name) {
+        mmBus145.joined[m.name] = true;
+        const p = S && S.players.find(x => x.name === m.name);
+        if (p) mmSend145(m.name, { type: 'role', name: p.name, role: p.role, color: p.color });
+        console.log('📱 Телефон подключился:', m.name);
+      } else if (m.name && m.d) phoneCmd141(m.d, { _mmName: m.name });
+    } catch (e) {}
+  });
+  return room;
+}
