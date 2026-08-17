@@ -14,7 +14,7 @@
   .row{display:flex;justify-content:space-between;font-size:14px;padding:3px 2px}
   .row b{color:#ffd54f}
   #turn{text-align:center;font-size:13px;color:#8a93af;margin-top:8px}
-  #status{font-size:11px;color:#8a93af;text-align:center;margin-top:8px}
+  #status{font-size:11px;color:#8a93af;text-align:center;margin-top:8px;word-break:break-all}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
   .stat{background:rgba(255,255,255,.05);border-radius:8px;padding:6px;text-align:center;font-size:12px}
   .stat b{display:block;font-size:16px;color:#ffd54f}
@@ -46,6 +46,7 @@
   </div>
 </div>
 <script>
+window.onerror = m => { document.getElementById('status').textContent = '❌ JS: ' + m; };
 const ROLN = { sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civilian: '🕊 МИРНЫЙ', cop: '🦹 ПРОДАЖНЫЙ КОП' };
 const st = document.getElementById('status');
 const rdata = (location.hash.match(/r=([^&]+)/) || [])[1];
@@ -86,8 +87,7 @@ if (rdata) {
   try { showRole(JSON.parse(decodeURIComponent(escape(atob(rdata))))); }
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
 }
-if (room) {
-  const MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
+const MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
 function boot() {
   const tryUrl = i => {
     if (i >= MM_BROKERS.length) { st.textContent = '📴 Все брокеры резаны — роль офлайн.'; return; }
@@ -106,16 +106,17 @@ function boot() {
   };
   tryUrl(0);
 }
+if (room) {
   if (window.mqtt) boot();
   else {
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/mqtt@5.7.0/dist/mqtt.min.js';
     s.onload = boot;
-    s.onerror = () => { st.textContent = '📴 Пульт недоступен (нет MQTT), роль офлайн.'; };
+    s.onerror = () => { st.textContent = '📴 Нет MQTT-библиотеки — роль офлайн.'; };
     document.head.appendChild(s);
   }
 } else if (!rdata) {
-  st.textContent = '❌ Нет данных — отсканируй QR заново.';
+  st.textContent = '❌ Нет данных — отсканируй QR зановно.';
 }
 </script>
 </body>
