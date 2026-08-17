@@ -5048,3 +5048,60 @@ function qrState138() {
   document.getElementById('zplus151').onclick = () => { k = Math.min(2.5, k + .15); apply151(); };
   document.getElementById('zauto151').onclick = auto151;
 })();
+// ============================================
+// ДОПОЛНЕНИЕ v152 — ЗЕРКАЛО ОКОН: КУПИТЬ/ЖЕТОНЫ/УСЛЫШАЛ С ТЕЛЕФОНА
+// ============================================
+let _mmBtns152 = [];
+function mmModalClick152(i) { const b = _mmBtns152[i]; if (b) b.click(); }
+const _sm152 = window.showModal;
+window.showModal = function (html, opts) {
+  const pr = _sm152(html, opts);
+  setTimeout(() => {
+    if (!mmBus145 || !Object.keys(mmBus145.joined).length) return;
+    const btns = [...document.querySelectorAll('.modal button, #modal button, [class*="modal"] button')].filter(b => b.getClientRects().length);
+    if (!btns.length) return;
+    _mmBtns152 = btns;
+    const h2 = document.querySelector('.modal h2, #modal h2, [class*="modal"] h2');
+    qrBroadcast138({ type: 'modal', title: h2 ? h2.textContent.trim() : 'Запрос города', buttons: btns.map(b => b.textContent.trim()) });
+  }, 120);
+  return pr;
+};
+// ============================================
+// ДОПОЛНЕНИЕ v153 — РУКА НА ТЕЛЕФОНЕ + КОМАНДЫ МОДАЛ/КАРТА
+// ============================================
+function phoneCmd141(d, conn) {
+  if (!S || !d || !d.cmd) return;
+  if (d.cmd === 'modal') { mmModalClick152(d.i | 0); return; }
+  const cur = S.players[S.cur];
+  if (!cur || cur.isBot || cur.name !== conn._mmName) return;
+  if (d.cmd === 'roll') { const b = document.getElementById('rollBtn'); if (b && !b.disabled && !S.isBusy) rollDice(); }
+  if (d.cmd === 'end') { const b = document.getElementById('endBtn'); if (b && !b.disabled) endTurn(); }
+  if (d.cmd === 'play') { const el = document.querySelector('[data-key="' + d.key + '"]'); if (el) el.click(); }
+}
+function qrState138() {
+  try {
+    if (!S || !mmBus145 || !Object.keys(mmBus145.joined).length) return;
+    const now = Date.now();
+    if (now - (window._mm148t || 0) < 800) return;
+    window._mm148t = now;
+    const cur = S.players[S.cur] || {};
+    const logEl = document.querySelector('#log div, .log div, .log-line, .chronicle div');
+    qrBroadcast138({
+      type: 'state', round: S.round || S.turnCount || 1, turn: cur.name || '',
+      lastLog: logEl ? logEl.textContent.trim() : '',
+      players: S.players.map(p => ({
+        name: p.name, coins: num150(p.coins != null ? p.coins : p.money),
+        suspect: num150(p.suspect), fatigue: num150(p.fatigue), fear: num150(p.fear), tokens: num150(p.tokens)
+      }))
+    });
+    if (cur && !cur.isBot && mmBus145.joined[cur.name]) {
+      const cards = (cur.hand || []).map(it => {
+        const key = typeof it === 'string' ? it : (it.key || it.id || '');
+        const nm = (window.CHIPS && CHIPS[key] && CHIPS[key].name) || (window.SKINS && SKINS[key] && SKINS[key].name) ||
+          (window.MORAL_DECK && MORAL_DECK.find ? ((MORAL_DECK.find(m => m.id === key) || {}).name) : '') || key;
+        return { key: key, name: nm };
+      });
+      mmSend145(cur.name, { type: 'hand', cards: cards });
+    }
+  } catch (e) {}
+}
