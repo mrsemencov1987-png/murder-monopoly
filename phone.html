@@ -19,6 +19,9 @@
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
   .stat{background:rgba(255,255,255,.05);border-radius:8px;padding:6px;text-align:center;font-size:12px}
   .stat b{display:block;font-size:16px;color:#ffd54f}
+  #remote{display:none;gap:8px;margin-top:12px}
+  #remote button{flex:1;padding:12px 0;background:linear-gradient(180deg,#1a2340,#0d1226);border:2px solid #d4af37;color:#ffd54f;font-weight:900;font-size:14px;border-radius:10px;cursor:pointer}
+  #remote button:disabled{opacity:.35;cursor:default}
 </style>
 </head>
 <body>
@@ -38,13 +41,17 @@
     <div class="row"><span>🎟 Жетоны</span><b id="s-tok">0</b></div>
     <div id="turn"></div>
   </div>
+  <div id="remote">
+    <button id="btn-roll" disabled>🎲 Кубик</button>
+    <button id="btn-end" disabled>✅ Ход</button>
+  </div>
 </div>
 <script>
 const ROLN = { sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civilian: '🕊 МИРНЫЙ', cop: '🦹 ПРОДАЖНЫЙ КОП' };
 const st = document.getElementById('status');
 const rdata = (location.hash.match(/r=([^&]+)/) || [])[1];
 const room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
-let myName = null;
+let myName = null, myConn = null;
 function showRole(d) {
   myName = d.n;
   st.textContent = '🤫 Это твой секрет — никому не показывай!';
@@ -53,20 +60,31 @@ function showRole(d) {
   r.textContent = ROLN[d.r] || d.r;
   const w = document.getElementById('who'); w.style.display = 'block'; w.textContent = 'Ты играешь за: ' + d.n;
 }
-if (rdata) { // режим плашек: роль прямо из QR
+document.getElementById('btn-roll').onclick = () => { if (myConn) myConn.send({ cmd: 'roll' }); };
+document.getElementById('btn-end').onclick = () => { if (myConn) myConn.send({ cmd: 'end' }); };
+if (rdata) {
   try { showRole(JSON.parse(decodeURIComponent(escape(atob(rdata))))); }
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
-} else if (room) { // живой режим: один QR на всех
+} else if (room) {
   const peer = new Peer();
   peer.on('open', () => { st.textContent = '📡 Ищу город…'; peer.connect(room, { reliable: true }); });
   peer.on('error', e => { st.textContent = '❌ Ошибка: ' + e.type; });
   peer.on('connection', conn => {
+    myConn = conn;
     conn.on('open', () => { st.textContent = '🔗 Подключено! Жду роль…'; });
     conn.on('data', d => {
-      if (d.type === 'role') { showRole({ n: d.name, r: d.role, c: d.color }); document.getElementById('event').style.display = 'block'; document.getElementById('dash').style.display = 'block'; }
+      if (d.type === 'role') {
+        showRole({ n: d.name, r: d.role, c: d.color });
+        document.getElementById('event').style.display = 'block';
+        document.getElementById('dash').style.display = 'block';
+        document.getElementById('remote').style.display = 'flex';
+      }
       if (d.type === 'state') {
         const ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.lastLog || '…';
         document.getElementById('turn').textContent = 'Раунд ' + d.round + ' · ходит: ' + d.turn;
+        const my = d.turn === myName;
+        document.getElementById('btn-roll').disabled = !my;
+        document.getElementById('btn-end').disabled = !my;
         const me = d.players.find(p => p.name === myName);
         if (me) {
           document.getElementById('s-coins').textContent = me.coins;
