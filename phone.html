@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ММ — твой экран</title>
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
   body{margin:0;background:#0a0e20;color:#dfe6ff;font-family:Segoe UI,Arial;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box}
   .card{width:min(94vw,400px);border:3px solid #d4af37;border-radius:16px;padding:16px;background:linear-gradient(160deg,#141a35,#0a0e20);box-shadow:0 0 40px rgba(212,175,55,.3)}
@@ -51,7 +50,7 @@ const ROLN = { sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civili
 const st = document.getElementById('status');
 const rdata = (location.hash.match(/r=([^&]+)/) || [])[1];
 const room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
-let myName = null, myConn = null;
+let myName = null, cli = null;
 function showRole(d) {
   myName = d.n;
   st.textContent = '🤫 Это твой секрет — никому не показывай!';
@@ -60,42 +59,53 @@ function showRole(d) {
   r.textContent = ROLN[d.r] || d.r;
   const w = document.getElementById('who'); w.style.display = 'block'; w.textContent = 'Ты играешь за: ' + d.n;
 }
-document.getElementById('btn-roll').onclick = () => { if (myConn) myConn.send({ cmd: 'roll' }); };
-document.getElementById('btn-end').onclick = () => { if (myConn) myConn.send({ cmd: 'end' }); };
+function handle(d) {
+  if (d.type === 'role') showRole({ n: d.name, r: d.role, c: d.color });
+  if (d.type === 'state') {
+    const ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.lastLog || '…';
+    document.getElementById('dash').style.display = 'block';
+    document.getElementById('remote').style.display = 'flex';
+    document.getElementById('turn').textContent = 'Раунд ' + d.round + ' · ходит: ' + d.turn;
+    const my = d.turn === myName;
+    document.getElementById('btn-roll').disabled = !my;
+    document.getElementById('btn-end').disabled = !my;
+    const me = d.players.find(p => p.name === myName);
+    if (me) {
+      document.getElementById('s-coins').textContent = me.coins;
+      document.getElementById('s-sus').textContent = me.suspect;
+      document.getElementById('s-fat').textContent = me.fatigue;
+      document.getElementById('s-fear').textContent = me.fear;
+      document.getElementById('s-tok').textContent = me.tokens;
+    }
+  }
+  if (d.type === 'text') { const ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.text; }
+}
+document.getElementById('btn-roll').onclick = () => { if (cli && myName) cli.publish('mm145/' + room + '/up', JSON.stringify({ name: myName, d: { cmd: 'roll' } })); };
+document.getElementById('btn-end').onclick = () => { if (cli && myName) cli.publish('mm145/' + room + '/up', JSON.stringify({ name: myName, d: { cmd: 'end' } })); };
 if (rdata) {
   try { showRole(JSON.parse(decodeURIComponent(escape(atob(rdata))))); }
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
 }
-if (room) { // живой канал поверх роли
-  const peer = new Peer();
-  peer.on('open', () => { peer.connect(room, { reliable: true }); });
-  peer.on('error', e => { if (!myConn) st.textContent = '📴 Пульт недоступен (' + e.type + '), роль работает офлайн.'; });
-  peer.on('connection', conn => {
-    myConn = conn;
-    conn.on('open', () => { if (myName) conn.send({ type: 'hello', name: myName }); st.textContent = '🔗 На связи с городом: пульт активен.'; });
-    conn.on('data', d => {
-      if (d.type === 'role') showRole({ n: d.name, r: d.role, c: d.color });
-      if (d.type === 'state') {
-        const ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.lastLog || '…';
-        document.getElementById('dash').style.display = 'block';
-        document.getElementById('remote').style.display = 'flex';
-        document.getElementById('turn').textContent = 'Раунд ' + d.round + ' · ходит: ' + d.turn;
-        const my = d.turn === myName;
-        document.getElementById('btn-roll').disabled = !my;
-        document.getElementById('btn-end').disabled = !my;
-        const me = d.players.find(p => p.name === myName);
-        if (me) {
-          document.getElementById('s-coins').textContent = me.coins;
-          document.getElementById('s-sus').textContent = me.suspect;
-          document.getElementById('s-fat').textContent = me.fatigue;
-          document.getElementById('s-fear').textContent = me.fear;
-          document.getElementById('s-tok').textContent = me.tokens;
-        }
-      }
-      if (d.type === 'text') { const ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.text; }
+if (room) {
+  const boot = () => {
+    cli = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', { clientId: 'ph' + Math.random().toString(36).slice(2, 8), reconnectPeriod: 5000 });
+    cli.on('connect', () => {
+      cli.subscribe('mm145/' + room + '/down/all');
+      if (myName) cli.subscribe('mm145/' + room + '/down/' + myName);
+      cli.publish('mm145/' + room + '/up', JSON.stringify({ type: 'hello', name: myName }));
+      st.textContent = '🔗 На связи с городом: пульт активен.';
     });
-    conn.on('close', () => { st.textContent = '📴 Связь с городом потеряна.'; });
-  });
+    cli.on('message', (t, p) => { try { handle(JSON.parse(p.toString())); } catch (e) {} });
+    cli.on('error', () => { st.textContent = '📴 Пульт недоступен, роль работает офлайн.'; });
+  };
+  if (window.mqtt) boot();
+  else {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/mqtt@5.7.0/dist/mqtt.min.js';
+    s.onload = boot;
+    s.onerror = () => { st.textContent = '📴 Пульт недоступен (нет MQTT), роль офлайн.'; };
+    document.head.appendChild(s);
+  }
 } else if (!rdata) {
   st.textContent = '❌ Нет данных — отсканируй QR заново.';
 }
