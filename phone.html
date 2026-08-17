@@ -89,9 +89,11 @@ if (rdata) {
 }
 const MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
 function boot() {
+  const bIdx = parseInt(((location.hash.match(/b=(\d+)/) || [])[1] || '0'), 10);
+  const order = [MM_BROKERS[bIdx]].concat(MM_BROKERS.filter((x, i) => i !== bIdx)).filter(Boolean);
   const tryUrl = i => {
-    if (i >= MM_BROKERS.length) { st.textContent = '📴 Все брокеры резаны — роль офлайн.'; return; }
-    const c = mqtt.connect(MM_BROKERS[i], { clientId: 'ph' + Math.random().toString(36).slice(2, 8), reconnectPeriod: 60000, connectTimeout: 5000 });
+    if (i >= order.length) { st.textContent = '📴 Все брокеры резаны — роль офлайн.'; return; }
+    const c = mqtt.connect(order[i], { clientId: 'ph' + Math.random().toString(36).slice(2, 8), reconnectPeriod: 60000, connectTimeout: 5000 });
     const to = setTimeout(() => { c.end(true); tryUrl(i + 1); }, 5000);
     c.on('connect', () => {
       clearTimeout(to);
@@ -104,6 +106,8 @@ function boot() {
     c.on('error', () => { clearTimeout(to); c.end(true); tryUrl(i + 1); });
     c.on('message', (t, p) => { try { handle(JSON.parse(p.toString())); } catch (e) {} });
   };
+  tryUrl(0);
+}
   tryUrl(0);
 }
 if (room) {
