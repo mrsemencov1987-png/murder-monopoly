@@ -5172,3 +5172,32 @@ function qrState138() {
     }
   } catch (e) {}
 }
+// ============================================
+// ДОПОЛНЕНИЕ v157 — КАНАЛ ЧЕРЕЗ NTFY.SH (HTTPS 443, БЕЗ АККАУНТОВ)
+// ============================================
+const MM_NTFY = 'https://ntfy.sh';
+async function mmStartPc145() {
+  const room = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
+  mmBus145 = {
+    room: room, joined: {},
+    client: { publish: (t, s) => fetch(MM_NTFY + '/' + t, { method: 'POST', body: s, headers: { 'Content-Type': 'text/plain' } }) }
+  };
+  const es = new EventSource(MM_NTFY + '/mm145_' + room + '_up/sse');
+  es.onmessage = e => {
+    try {
+      const outer = JSON.parse(e.data);
+      const m = JSON.parse(outer.message);
+      if (m.type === 'hello' && m.name) {
+        mmBus145.joined[m.name] = true;
+        const p = S && S.players.find(x => x.name === m.name);
+        if (p) mmSend145(m.name, { type: 'role', name: p.name, role: p.role, color: p.color });
+        console.log('📱 Телефон подключился:', m.name);
+      } else if (m.name && m.d) phoneCmd141(m.d, { _mmName: m.name });
+    } catch (err) {}
+  };
+  console.log('🌐 Комната ntfy создана:', room);
+  return room;
+}
+function mmSend145(name, obj) { if (mmBus145) mmBus145.client.publish('mm145_' + mmBus145.room + '_down_' + name, JSON.stringify(obj)); }
+function qrBroadcast138(msg) { if (mmBus145) mmBus145.client.publish('mm145_' + mmBus145.room + '_down_all', JSON.stringify(msg)); }
+function qrAnyOpen138() { return !!(mmBus145 && Object.keys(mmBus145.joined).length); }
