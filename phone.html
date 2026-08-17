@@ -128,7 +128,7 @@ if (rdata) {
   try { showRole(JSON.parse(decodeURIComponent(escape(atob(rdata))))); }
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
 }
-var MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
+var MM_BROKERS = ['wss://mqtt.eclipseprojects.io:443/mqtt', 'wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
 function boot() {
   var order = [MM_BROKERS[bIdx]].concat(MM_BROKERS.filter(function (x, i) { return i !== bIdx; })).filter(Boolean);
   var tryUrl = function (i) {
