@@ -4729,3 +4729,53 @@ async function qrSeq111(oldHtml) {
   }
   return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p style="opacity:.7">Город просыпается…</p><button data-v="go">🎲 Начать!</button>');
 }
+// ============================================
+// ДОПОЛНЕНИЕ v143 — КОД ПОДКЛЮЧАЕТ ТВОИ АРТЫ: ДЕЙСТВИЯ + МОРАЛЬ + ПОРТРЕТЫ
+// ============================================
+function artPath143(kind, key) {
+  if (kind === 'chip') return 'img/chips/' + key + '.png';
+  if (kind === 'mor') return 'img/morals/' + key + '.png';
+  if (kind === 'skin' && window.SKINS && SKINS[key]) return window.getSkinImage ? getSkinImage(key, SKINS[key].category) : 'img/skins/' + key + '.png';
+  return null;
+}
+function injectArts143(root) {
+  (root || document).querySelectorAll('img.hc-art, img.mo-art').forEach(img => {
+    if (img.dataset.done143) return;
+    const key = img.dataset.key;
+    if (!key) return;
+    const path = img.classList.contains('mo-art') ? 'img/morals/' + key + '.png' : artPath143(img.dataset.kind, key);
+    if (!path) return;
+    img.dataset.done143 = '1';
+    imageCache.get(path).then(im => {
+      if (im) {
+        img.src = path;
+        img.style.display = 'block';
+        const ph = img.nextElementSibling;
+        if (ph && ph.classList && ph.classList.contains('hc-ph')) ph.style.display = 'none';
+      }
+    });
+  });
+  // портреты: любой элемент с data-name/title = имя игрока получает лицо
+  if (window.S && S.players) S.players.forEach(p => {
+    document.querySelectorAll('[data-name="' + p.name + '"], [title="' + p.name + '"]').forEach(el => {
+      if (el.dataset.face143) return;
+      el.dataset.face143 = '1';
+      imageCache.get('img/faces/' + p.name + '.png').then(im => {
+        if (im) {
+          el.style.backgroundImage = 'url(img/faces/' + p.name + '.png)';
+          el.style.backgroundSize = 'cover';
+          el.style.backgroundPosition = 'center';
+        }
+      });
+    });
+  });
+}
+const _ui143 = window.updateUI;
+window.updateUI = function () { _ui143(); injectArts143(); };
+// и во всплывающих окнах (выбор морали и т.д.)
+const _sm143 = window.showModal;
+window.showModal = function (html, opts) {
+  const pr = _sm143(html, opts);
+  setTimeout(() => injectArts143(), 80);
+  return pr;
+};
