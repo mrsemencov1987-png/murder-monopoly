@@ -4451,3 +4451,35 @@ window.showQRScreen = async function () {
     '<button data-v="go">🎲 Начать!</button><button data-v="skip">🙈 Без телефонов</button>');
   if (peer) window.MM_PEER = peer; // держим связь для следующих этапов
 };
+// ============================================
+// ДОПОЛНЕНИЕ v136 — QR-ПЛАШКИ: СВЕЖИЙ QR КАЖДОМУ, НИ ОДНОЙ ПУСТОЙ
+// ============================================
+async function qrSeq111(oldHtml) {
+  const t = document.createElement('template');
+  t.innerHTML = oldHtml;
+  const parsed = [...t.content.querySelectorAll('img')].map((im, i) => {
+    let n = '';
+    if (im.parentElement) { const d = im.parentElement.querySelector('div'); if (d) n = d.textContent.trim(); }
+    return { name: n || im.alt || ('Игрок ' + (i + 1)), oldSrc: im.getAttribute('src'), i: i };
+  });
+  const items = [];
+  for (const p of parsed) {
+    let src = p.oldSrc;
+    if (window.pairUrl && S) { // свежий QR напрямую, без reliance на старое окно
+      const pl = S.players.find(x => x.name === p.name) || S.players[p.i];
+      if (pl) { try { src = await pairUrl(pl.index); } catch (e) {} }
+    }
+    if (src) items.push({ name: p.name, src: src });
+  }
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    await _sm111('<h2>📱 ' + it.name + ' — отсканируй свою роль</h2>' +
+      '<p>Передай устройство игроку <b>' + it.name + '</b>. Остальные — не подглядывать!</p>' +
+      '<div style="display:flex;justify-content:center;padding:14px"><div style="background:#fff;padding:14px;border-radius:16px;box-shadow:0 0 40px rgba(212,175,55,.45)">' +
+      '<img src="' + it.src + '" onerror="this.style.opacity=.25;this.alt=\'❌ QR не загрузился — нажми дальше и вернись\'" style="width:min(430px,72vw);height:auto;display:block">' +
+      '<div style="color:#000;text-align:center;font-weight:900;letter-spacing:2px;font-size:20px;padding-top:8px">' + it.name + '</div></div></div>' +
+      '<p style="text-align:center;opacity:.6;font-size:12px">Плашка ' + (i + 1) + ' из ' + items.length + ' · роль откроется только на телефоне</p>' +
+      '<button data-v="next">✅ ' + it.name + ' отсканировал — дальше</button>');
+  }
+  return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p style="opacity:.7">Город просыпается…</p><button data-v="go">🎲 Начать!</button>');
+}
