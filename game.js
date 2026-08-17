@@ -4685,3 +4685,47 @@ window.showQRScreen = async function () {
     '<button data-v="go">🎲 Начать!</button><button data-v="seq">🙈 Плашки по очереди</button>');
   if (ch === 'seq') return qrSeq111('');
 };
+// ============================================
+// ДОПОЛНЕНИЕ v142 — ПЛАШКИ + ЖИВОЙ ПУЛЬТ ОДНОВРЕМЕННО (room внутри QR плашки)
+// ============================================
+async function qrSeq111(oldHtml) {
+  try { await loadQRious137(); } catch (e) {}
+  let roomId = '';
+  try {
+    await loadPeerJS135();
+    roomId = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
+    const peer = new Peer(roomId);
+    await new Promise((res, rej) => { peer.on('open', res); peer.on('error', rej); setTimeout(() => rej(new Error('t')), 5000); });
+    window.MM_PEER = peer;
+    peer.on('connection', conn => {
+      conn.on('data', d => {
+        if (d && d.type === 'hello' && d.name) {
+          conn._mmName = d.name;
+          const p = S && S.players.find(x => x.name === d.name);
+          if (p) conn.send({ type: 'role', name: p.name, role: p.role, color: p.color });
+        } else phoneCmd141(d, conn);
+      });
+    });
+  } catch (e) { roomId = ''; } // нет PeerJS — плашки работают офлайн
+  const base = location.href.split('#')[0].replace(/[^/]*$/, '') + 'phone.html';
+  const list = S.players.filter(p => !p.isBot);
+  const items = list.map(p => {
+    let src = '';
+    try {
+      const link = base + '#r=' + btoa(unescape(encodeURIComponent(JSON.stringify({ n: p.name, r: p.role, c: p.color })))) + (roomId ? '&room=' + roomId : '');
+      src = new QRious({ value: link, size: 460, level: 'M' }).toDataURL();
+    } catch (e) {}
+    return { name: p.name, src: src };
+  }).filter(x => x.src);
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    await _sm111('<h2>📱 ' + it.name + ' — отсканируй свою роль</h2>' +
+      '<p>Передай устройство игроку <b>' + it.name + '</b>. Остальные — не подглядывать!</p>' +
+      '<div style="display:flex;justify-content:center;padding:14px"><div style="background:#fff;padding:14px;border-radius:16px;box-shadow:0 0 40px rgba(212,175,55,.45)">' +
+      '<img src="' + it.src + '" style="width:min(430px,72vw);height:auto;display:block">' +
+      '<div style="color:#000;text-align:center;font-weight:900;letter-spacing:2px;font-size:20px;padding-top:8px">' + it.name + '</div></div></div>' +
+      '<p style="text-align:center;opacity:.6;font-size:12px">Плашка ' + (i + 1) + ' из ' + items.length + ' · роль и пульт откроются на телефоне</p>' +
+      '<button data-v="next">✅ ' + it.name + ' отсканировал — дальше</button>');
+  }
+  return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p style="opacity:.7">Город просыпается…</p><button data-v="go">🎲 Начать!</button>');
+}
