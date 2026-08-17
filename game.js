@@ -5105,3 +5105,31 @@ function qrState138() {
     }
   } catch (e) {}
 }
+// ============================================
+// ДОПОЛНЕНИЕ v155 — ТВ-СПАСАТЕЛЬ: ВЕРНУТЬ ПОЛЕ ИЗ «ПИЛЮЛИ»
+// ============================================
+(function () {
+  function board155() {
+    return document.getElementById('board') || document.querySelector('.board') || document.getElementById('boardWrap') || document.querySelector('.board-wrap');
+  }
+  window.tvRescue155 = function () {
+    const b = board155(); if (!b) return;
+    let el = b;
+    for (let i = 0; i < 4 && el; i++) { el.style.transform = 'none'; el.style.zoom = '1'; el = el.parentElement; }
+    b.style.width = '1000px'; b.style.height = '1000px';
+    b.style.minWidth = '1000px'; b.style.flex = 'none';
+    const wrap = b.parentElement;
+    const aw = (wrap && wrap.clientWidth > 200 ? wrap.clientWidth : window.innerWidth - 380);
+    const ah = window.innerHeight - 140;
+    const k = Math.max(.3, Math.min(aw / 1000, ah / 1000, 2));
+    b.style.zoom = k;
+    window.dispatchEvent(new Event('resize'));
+  };
+  const btn = document.createElement('button');
+  btn.textContent = '📺';
+  btn.title = 'Вернуть поле';
+  btn.style.cssText = 'position:fixed;top:8px;left:132px;z-index:500;width:38px;height:38px;border-radius:10px;border:2px solid #d4af37;background:#101632;color:#ffd54f;font-size:18px;font-weight:900;cursor:pointer';
+  btn.onclick = window.tvRescue155;
+  document.body.appendChild(btn);
+  setTimeout(window.tvRescue155, 2500); // авто-спасение после загрузки
+})();
