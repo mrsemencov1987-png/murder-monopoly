@@ -5018,3 +5018,33 @@ function qrState138() {
     });
   } catch (e) {}
 }
+// ============================================
+// ДОПОЛНЕНИЕ v151 — ТВ-РЕЖИМ: АВТОПОДГОН ПОЛЯ + КНОПКИ МАСШТАБА
+// ============================================
+(function () {
+  let k = 1;
+  function board151() {
+    return document.getElementById('board') || document.querySelector('.board') || document.getElementById('boardWrap') || document.querySelector('.board-wrap');
+  }
+  function apply151() { const b = board151(); if (b) b.style.zoom = k; }
+  function auto151() {
+    const b = board151(); if (!b) return;
+    b.style.zoom = 1;
+    const aw = window.innerWidth - 16, ah = window.innerHeight - 16;
+    const bw = b.offsetWidth, bh = b.offsetHeight;
+    if (bw && bh) { k = Math.min(aw / bw, ah / bh); k = Math.max(.35, Math.min(k, 2.5)); apply151(); }
+  }
+  window.addEventListener('resize', auto151);
+  setTimeout(auto151, 1200);
+  setTimeout(auto151, 3500);
+  const bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;top:8px;left:8px;z-index:500;display:flex;gap:6px;';
+  bar.innerHTML =
+    '<button id="zmin151" style="width:38px;height:38px;border-radius:10px;border:2px solid #d4af37;background:#101632;color:#ffd54f;font-size:20px;font-weight:900;cursor:pointer">−</button>' +
+    '<button id="zauto151" style="width:38px;height:38px;border-radius:10px;border:2px solid #d4af37;background:#101632;color:#ffd54f;font-size:18px;font-weight:900;cursor:pointer">⤢</button>' +
+    '<button id="zplus151" style="width:38px;height:38px;border-radius:10px;border:2px solid #d4af37;background:#101632;color:#ffd54f;font-size:20px;font-weight:900;cursor:pointer">＋</button>';
+  document.body.appendChild(bar);
+  document.getElementById('zmin151').onclick = () => { k = Math.max(.35, k - .15); apply151(); };
+  document.getElementById('zplus151').onclick = () => { k = Math.min(2.5, k + .15); apply151(); };
+  document.getElementById('zauto151').onclick = auto151;
+})();
