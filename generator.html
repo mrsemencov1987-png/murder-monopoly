@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>MM — Генератор ассетов</title>
+<style>
+body{background:#0b1020;color:#eee;font-family:'Segoe UI',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center}
+h1{color:#d4af37}
+button{background:linear-gradient(180deg,#ffe08a,#d4af37);border:0;border-radius:10px;padding:16px 40px;font-size:18px;font-weight:800;color:#3d2f00;cursor:pointer;margin:20px}
+#status{color:#aed581;font-size:16px;white-space:pre-line}
+small{opacity:.6}
+</style>
+</head>
+<body>
+<h1>🎨 MURDER MONOPOLY</h1>
+<p>Генератор картинок. Открывай в Chrome или Edge.</p>
+<button onclick="generate()">⬇ Создать картинки в папке игры</button>
+<div id="status"></div>
+<small>После создания — обнови игру (Ctrl+F5)</small>
+<script>
+function emojiCanvas(e,bg,size=128,fs=72){
+ const c=document.createElement('canvas');c.width=c.height=size;
+ const x=c.getContext('2d');
+ const g=x.createRadialGradient(size/2,size/2,8,size/2,size/2,size*0.7);
+ g.addColorStop(0,bg);g.addColorStop(1,'#0b1020');
+ x.fillStyle=g;x.fillRect(0,0,size,size);
+ x.font=fs+'px "Segoe UI Emoji",serif';x.textAlign='center';x.textBaseline='middle';
+ x.fillText(e,size/2,size/2+6);
+ return c;
+}
+function logoCanvas(){
+ const c=document.createElement('canvas');c.width=c.height=160;const x=c.getContext('2d');
+ x.fillStyle='#0d1226';x.fillRect(0,0,160,160);
+ x.fillStyle='#d4af37';x.font='900 64px Segoe UI';x.textAlign='center';x.textBaseline='middle';
+ x.shadowColor='#d4af37';x.shadowBlur=20;x.fillText('MM',80,86);
+ return c;
+}
+function tokenCanvas(i){
+ const cols=['#ff5252','#4fc3f7','#aed581','#ffd54f','#ff8a65','#b39ddb'];
+ const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');
+ x.fillStyle=cols[i-1];x.beginPath();x.arc(32,32,26,0,7);x.fill();
+ x.lineWidth=4;x.strokeStyle='#fff';x.stroke();
+ return c;
+}
+async function write(dir,path,canvas){
+ const parts=path.split('/');const name=parts.pop();
+ let d=dir;
+ for(const p of parts)d=await d.getDirectoryHandle(p,{create:true});
+ const fh=await d.getFileHandle(name,{create:true});
+ const w=await fh.createWritable();
+ const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+ await w.write(blob);await w.close();
+}
+async function generate(){
+ let dir;
+ try{dir=await window.showDirectoryPicker();}
+ catch(e){document.getElementById('status').textContent='❌ Отменено или браузер не поддерживает. Открой в Chrome/Edge.';return;}
+ const st=document.getElementById('status');st.textContent='⏳ Создаю...';
+ const list=[];
+ list.push(['img/ui/logo.png',logoCanvas()]);
+ const T={morning:'🌅',day:'☀️',evening:'🌆',night:'🌙'};
+ for(const k in T)list.push(['img/time/'+k+'.png',emojiCanvas(T[k],'#1a2340')]);
+ const C={start:'🟢',coin:'🪙',roof:'🏙️',tunnel:'🚇',crime:'👣',stash:'🎁',police:'🚔',shop:'🛒',hospital:'🏥',psychologist:'🧠',gym:'💪'};
+ for(const k in C)list.push(['img/cells/'+k+'.png',emojiCanvas(C[k],'#1a2340')]);
+ for(let i=1;i<=6;i++)list.push(['img/tokens/'+i+'.png',tokenCanvas(i)]);
+ const P={0:'😊',3:'😐',6:'😠',10:'😡',13:'👿',15:'🤬'};
+ for(const k in P)list.push(['img/portraits/suspect_'+k+'.png',emojiCanvas(P[k],'#000',256,150)]);
+ const W={wooden_knife:'🔪',stone_dagger:'🗡️',iron_blade:'⚔️',blue_claw:'🐾',steel_fang:'🦷',crystal_shard:'💎',viper_fang:'🐍',shadow_cloak:'🌫️',phantom_blade:'👻',blaze_knife:'🔥',blaze_gun:'🔫',blaze_shield:'🛡️',ice_wing:'❄️',fire_wing:'🔥',gold_wing:'🪽',elderwood_scythe:'🌙',niks_scythe:'⚰️',corrupt:'🦹',eternal_flame:'🕯️',chroma_light:'🌈',void_blade:'🌌'};
+ for(const k in W)list.push(['img/skins/weapons/'+k+'.png',emojiCanvas(W[k],'#233058')]);
+ const A={dirty_rag:'🧣',baseball_cap:'🧢',knitted_hat:'🧶',helmet:'⛑️',viking_helmet:'🪖',crown:'👑',panama:'👒',ushanka:'🎩',old_sneakers:'👟',sneakers:'👟',combat_boots:'🥾'};
+ for(const k in A)list.push(['img/skins/armor/'+k+'.png',emojiCanvas(A[k],'#233058')]);
+ const AC={sunglasses:'🕶️',watch:'⌚',spyglass:'🔭',rubber_duck:'🦆',scarf:'🧣',backpack:'🎒'};
+ for(const k in AC)list.push(['img/skins/accessories/'+k+'.png',emojiCanvas(AC[k],'#233058')]);
+ let n=0;
+ for(const item of list){await write(dir,item[0],item[1]);n++;st.textContent='⏳ '+n+'/'+list.length;}
+ st.textContent='✅ Готово! Создано '+n+' картинок.\nТеперь обнови игру (Ctrl+F5).';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+img/portraits/
+├── suspect_0.mp4    ← спокойный (0–2 подозрений)
+├── suspect_3.mp4    ← настороженный (3–5)
+├── suspect_6.mp4    ← хмурый (6–9)
+├── suspect_10.mp4   ← злой (10–12)
+├── suspect_13.mp4   ← очень злой (13–14)
+└── suspect_15.mp4   ← бешеный (15)
+
+img/portraits/
+├── m_0.png  m_3.png  m_6.png  m_10.png  m_13.png  m_15.png   ← МУЖСКИЕ эмоции
+├── f_0.png  f_3.png  f_6.png  f_10.png  f_13.png  f_15.png   ← ЖЕНСКИЕ эмоции
+├── suspect_0.png … suspect_15.png                            ← общие (запасные)
+└── m_10.mp4, f_15.mp4 …                                      ← видео тоже работают!

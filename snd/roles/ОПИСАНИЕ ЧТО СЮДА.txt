@@ -1,0 +1,4 @@
+sheriff.mp3
+murderer.mp3
+civilian.mp3
+cop.mp3

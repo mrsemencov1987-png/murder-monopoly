@@ -1,0 +1,21 @@
+murder-monopoly_V4/
+├── img/
+│   ├── portraits/   (сюда потом suspect_0.png ... suspect_15.png)
+│   ├── roles/
+│   ├── cells/
+│   ├── time/
+│   ├── voice/
+│   ├── tokens/
+│   ├── skins/
+│   │   ├── weapons/
+│   │   ├── armor/
+│   │   └── accessories/
+│   └── ui/
+└── snd/
+    ├── music/
+    ├── effects/
+    ├── cells/
+    ├── cards/
+    ├── voice/
+    ├── time/
+    └── roles/
