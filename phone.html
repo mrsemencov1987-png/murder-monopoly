@@ -65,22 +65,20 @@ document.getElementById('btn-end').onclick = () => { if (myConn) myConn.send({ c
 if (rdata) {
   try { showRole(JSON.parse(decodeURIComponent(escape(atob(rdata))))); }
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
-} else if (room) {
+}
+if (room) { // живой канал поверх роли
   const peer = new Peer();
-  peer.on('open', () => { st.textContent = '📡 Ищу город…'; peer.connect(room, { reliable: true }); });
-  peer.on('error', e => { st.textContent = '❌ Ошибка: ' + e.type; });
+  peer.on('open', () => { peer.connect(room, { reliable: true }); });
+  peer.on('error', e => { if (!myConn) st.textContent = '📴 Пульт недоступен (' + e.type + '), роль работает офлайн.'; });
   peer.on('connection', conn => {
     myConn = conn;
-    conn.on('open', () => { st.textContent = '🔗 Подключено! Жду роль…'; });
+    conn.on('open', () => { if (myName) conn.send({ type: 'hello', name: myName }); st.textContent = '🔗 На связи с городом: пульт активен.'; });
     conn.on('data', d => {
-      if (d.type === 'role') {
-        showRole({ n: d.name, r: d.role, c: d.color });
-        document.getElementById('event').style.display = 'block';
-        document.getElementById('dash').style.display = 'block';
-        document.getElementById('remote').style.display = 'flex';
-      }
+      if (d.type === 'role') showRole({ n: d.name, r: d.role, c: d.color });
       if (d.type === 'state') {
         const ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.lastLog || '…';
+        document.getElementById('dash').style.display = 'block';
+        document.getElementById('remote').style.display = 'flex';
         document.getElementById('turn').textContent = 'Раунд ' + d.round + ' · ходит: ' + d.turn;
         const my = d.turn === myName;
         document.getElementById('btn-roll').disabled = !my;
@@ -98,7 +96,7 @@ if (rdata) {
     });
     conn.on('close', () => { st.textContent = '📴 Связь с городом потеряна.'; });
   });
-} else {
+} else if (!rdata) {
   st.textContent = '❌ Нет данных — отсканируй QR заново.';
 }
 </script>
