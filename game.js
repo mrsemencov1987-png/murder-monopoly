@@ -4529,3 +4529,45 @@ async function qrSeq111(oldHtml) {
   }
   return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p style="opacity:.7">Город просыпается…</p><button data-v="go">🎲 Начать!</button>');
 }
+// ============================================
+// ДОПОЛНЕНИЕ v138 — ТЕЛЕФОН = ВТОРОЙ ЭКРАН, МОНИТОР = ПОЛЕ + ПОРТРЕТЫ
+// ============================================
+function qrBroadcast138(msg) {
+  const peer = window.MM_PEER;
+  if (!peer || !peer.connections) return;
+  try { Object.keys(peer.connections).forEach(k => { (peer.connections[k] || []).forEach(c => { if (c.open) c.send(msg); }); }); } catch (e) {}
+}
+function qrAnyOpen138() {
+  const peer = window.MM_PEER;
+  if (!peer || !peer.connections) return false;
+  return Object.keys(peer.connections).some(k => (peer.connections[k] || []).some(c => c.open));
+}
+function qrMinimal138() {
+  if (document.getElementById('qrbar138')) return;
+  const bar = document.createElement('div');
+  bar.id = 'qrbar138';
+  bar.style.cssText = 'position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:300;display:flex;gap:10px;';
+  document.body.appendChild(bar);
+  ['rollBtn', 'endBtn'].forEach(id => { const el = document.getElementById(id); if (el) bar.appendChild(el); });
+  document.body.classList.add('qrlive-min');
+}
+function qrState138() {
+  if (!S || !window.MM_PEER) return;
+  if (qrAnyOpen138()) qrMinimal138(); else return;
+  const logEl = document.getElementById('log') || document.querySelector('.log');
+  const lastLog = logEl && logEl.firstElementChild ? logEl.firstElementChild.textContent.trim() : '';
+  qrBroadcast138({
+    type: 'state', round: S.round,
+    turn: S.players[S.cur] ? S.players[S.cur].name : '',
+    lastLog: lastLog,
+    players: S.players.map(p => ({
+      name: p.name, color: p.color, isBot: !!p.isBot, coins: p.coins,
+      suspect: p.suspect && p.suspect.get ? p.suspect.get() : p.suspect,
+      fatigue: p.fatigue && p.fatigue.get ? p.fatigue.get() : p.fatigue,
+      fear: p.fear && p.fear.get ? p.fear.get() : p.fear,
+      tokens: p.tokens
+    }))
+  });
+}
+const _ui138 = window.updateUI;
+window.updateUI = function () { _ui138(); qrState138(); };
