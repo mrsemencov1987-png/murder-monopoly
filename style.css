@@ -331,3 +331,7 @@ function ruleTts(text) {
 #rp103 > div { overflow-y: auto; }
 /* === v121: арт в слоте виден целиком, горизонтальный или вертикальный === */
 #rp103media img, #rp103media video { object-fit: contain !important; background: #000; }
+/* === v138: QR-live минимальный монитор === */
+body.qrlive-min .right-panel, body.qrlive-min .left-panel,
+body.qrlive-min #dossierPanel, body.qrlive-min #tokensPanel,
+body.qrlive-min .hand-panel, body.qrlive-min .panel { display: none !important; }
