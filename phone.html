@@ -21,6 +21,11 @@
   #remote{display:none;gap:8px;margin-top:12px}
   #remote button{flex:1;padding:12px 0;background:linear-gradient(180deg,#1a2340,#0d1226);border:2px solid #d4af37;color:#ffd54f;font-weight:900;font-size:14px;border-radius:10px;cursor:pointer}
   #remote button:disabled{opacity:.35;cursor:default}
+  #mmodal{display:none;margin-top:12px;border:2px solid #7cfc9a;border-radius:12px;padding:10px;background:rgba(124,252,154,.07)}
+  #mm-title{font-size:13px;font-weight:900;color:#7cfc9a;text-align:center;margin-bottom:6px}
+  #hand{display:none;margin-top:12px}
+  #hand-row{display:flex;gap:6px;overflow-x:auto;padding:6px 2px;scroll-snap-type:x mandatory}
+  #hand-row div{min-width:96px;scroll-snap-align:start;background:rgba(255,255,255,.07);border:1px solid rgba(212,175,55,.4);border-radius:10px;padding:8px;font-size:12px;text-align:center;cursor:pointer}
 </style>
 </head>
 <body>
@@ -40,6 +45,14 @@
     <div class="row"><span>🎟 Жетоны</span><b id="s-tok">0</b></div>
     <div id="turn"></div>
   </div>
+  <div id="mmodal">
+    <div id="mm-title"></div>
+    <div id="mm-btns"></div>
+  </div>
+  <div id="hand">
+    <div style="font-size:11px;color:#8a93af;text-align:center">🃏 Твои карты: свайп → , тап = сыграть</div>
+    <div id="hand-row"></div>
+  </div>
   <div id="remote">
     <button id="btn-roll" disabled>🎲 Кубик</button>
     <button id="btn-end" disabled>✅ Ход</button>
@@ -53,6 +66,7 @@ var rdata = (location.hash.match(/r=([^&]+)/) || [])[1];
 var room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
 var bIdx = parseInt(((location.hash.match(/b=(\d+)/) || [])[1] || '0'), 10);
 var myName = null, cli = null;
+function send(d) { if (cli && room) cli.publish('mm145/' + room + '/up', JSON.stringify({ name: myName, d: d })); }
 function showRole(d) {
   myName = d.n;
   st.textContent = '🤫 Это твой секрет — никому не показывай!';
@@ -81,10 +95,35 @@ function handle(d) {
       document.getElementById('s-tok').textContent = me.tokens;
     }
   }
+  if (d.type === 'modal') {
+    var box = document.getElementById('mmodal');
+    box.style.display = 'block';
+    document.getElementById('mm-title').textContent = '🖥 ' + d.title;
+    var row = document.getElementById('mm-btns');
+    row.innerHTML = '';
+    d.buttons.forEach(function (t, i) {
+      var b = document.createElement('button');
+      b.textContent = t;
+      b.style.cssText = 'display:block;width:100%;margin:4px 0;padding:10px;background:#101632;border:2px solid #d4af37;color:#ffd54f;font-weight:700;border-radius:10px;cursor:pointer';
+      b.onclick = function () { send({ cmd: 'modal', i: i }); box.style.display = 'none'; };
+      row.appendChild(b);
+    });
+  }
+  if (d.type === 'hand') {
+    document.getElementById('hand').style.display = 'block';
+    var wrap = document.getElementById('hand-row');
+    wrap.innerHTML = '';
+    d.cards.forEach(function (c) {
+      var el = document.createElement('div');
+      el.textContent = c.name;
+      el.onclick = function () { send({ cmd: 'play', key: c.key }); };
+      wrap.appendChild(el);
+    });
+  }
   if (d.type === 'text') { var ev2 = document.getElementById('event'); ev2.style.display = 'block'; ev2.textContent = d.text; }
 }
-document.getElementById('btn-roll').onclick = function () { if (cli && myName) cli.publish('mm145/' + room + '/up', JSON.stringify({ name: myName, d: { cmd: 'roll' } })); };
-document.getElementById('btn-end').onclick = function () { if (cli && myName) cli.publish('mm145/' + room + '/up', JSON.stringify({ name: myName, d: { cmd: 'end' } })); };
+document.getElementById('btn-roll').onclick = function () { send({ cmd: 'roll' }); };
+document.getElementById('btn-end').onclick = function () { send({ cmd: 'end' }); };
 if (rdata) {
   try { showRole(JSON.parse(decodeURIComponent(escape(atob(rdata))))); }
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
