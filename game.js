@@ -4483,3 +4483,49 @@ async function qrSeq111(oldHtml) {
   }
   return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p style="opacity:.7">Город просыпается…</p><button data-v="go">🎲 Начать!</button>');
 }
+// ============================================
+// ДОПОЛНЕНИЕ v137 — QR РИСУЮТСЯ ЛОКАЛЬНО (QRious), БЕЗ ВНЕШНИХ СЕРВИСОВ
+// ============================================
+function loadQRious137() {
+  return new Promise((res, rej) => {
+    if (window.QRious) return res();
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
+    s.onload = () => res(); s.onerror = () => rej(new Error('no qrious'));
+    document.head.appendChild(s);
+  });
+}
+async function qrSeq111(oldHtml) {
+  try { await loadQRious137(); } catch (e) {}
+  const t = document.createElement('template');
+  t.innerHTML = oldHtml;
+  const parsed = [...t.content.querySelectorAll('img')].map((im, i) => {
+    let n = '';
+    if (im.parentElement) { const d = im.parentElement.querySelector('div'); if (d) n = d.textContent.trim(); }
+    return { name: n || ('Игрок ' + (i + 1)), oldSrc: im.getAttribute('src'), i: i };
+  });
+  const items = [];
+  for (const p of parsed) {
+    let src = p.oldSrc;
+    if (window.pairUrl && S) {
+      const pl = S.players.find(x => x.name === p.name) || S.players[p.i];
+      if (pl) { try { src = await pairUrl(pl.index); } catch (e) {} }
+    }
+    // если src — ссылка (а не картинка), рисуем QR сами локально
+    if (src && src.indexOf('data:image') !== 0 && window.QRious) {
+      try { src = new QRious({ value: src, size: 460, level: 'M' }).toDataURL(); } catch (e) {}
+    }
+    if (src) items.push({ name: p.name, src: src });
+  }
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    await _sm111('<h2>📱 ' + it.name + ' — отсканируй свою роль</h2>' +
+      '<p>Передай устройство игроку <b>' + it.name + '</b>. Остальные — не подглядывать!</p>' +
+      '<div style="display:flex;justify-content:center;padding:14px"><div style="background:#fff;padding:14px;border-radius:16px;box-shadow:0 0 40px rgba(212,175,55,.45)">' +
+      '<img src="' + it.src + '" style="width:min(430px,72vw);height:auto;display:block">' +
+      '<div style="color:#000;text-align:center;font-weight:900;letter-spacing:2px;font-size:20px;padding-top:8px">' + it.name + '</div></div></div>' +
+      '<p style="text-align:center;opacity:.6;font-size:12px">Плашка ' + (i + 1) + ' из ' + items.length + ' · роль откроется только на телефоне</p>' +
+      '<button data-v="next">✅ ' + it.name + ' отсканировал — дальше</button>');
+  }
+  return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p style="opacity:.7">Город просыпается…</p><button data-v="go">🎲 Начать!</button>');
+}
