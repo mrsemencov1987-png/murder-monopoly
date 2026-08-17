@@ -87,17 +87,25 @@ if (rdata) {
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
 }
 if (room) {
-  const boot = () => {
-    cli = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', { clientId: 'ph' + Math.random().toString(36).slice(2, 8), reconnectPeriod: 5000 });
-    cli.on('connect', () => {
+  const MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
+function boot() {
+  const tryUrl = i => {
+    if (i >= MM_BROKERS.length) { st.textContent = '📴 Все брокеры резаны — роль офлайн.'; return; }
+    const c = mqtt.connect(MM_BROKERS[i], { clientId: 'ph' + Math.random().toString(36).slice(2, 8), reconnectPeriod: 60000, connectTimeout: 5000 });
+    const to = setTimeout(() => { c.end(true); tryUrl(i + 1); }, 5000);
+    c.on('connect', () => {
+      clearTimeout(to);
+      cli = c;
       cli.subscribe('mm145/' + room + '/down/all');
       if (myName) cli.subscribe('mm145/' + room + '/down/' + myName);
       cli.publish('mm145/' + room + '/up', JSON.stringify({ type: 'hello', name: myName }));
       st.textContent = '🔗 На связи с городом: пульт активен.';
     });
-    cli.on('message', (t, p) => { try { handle(JSON.parse(p.toString())); } catch (e) {} });
-    cli.on('error', () => { st.textContent = '📴 Пульт недоступен, роль работает офлайн.'; });
+    c.on('error', () => { clearTimeout(to); c.end(true); tryUrl(i + 1); });
+    c.on('message', (t, p) => { try { handle(JSON.parse(p.toString())); } catch (e) {} });
   };
+  tryUrl(0);
+}
   if (window.mqtt) boot();
   else {
     const s = document.createElement('script');
