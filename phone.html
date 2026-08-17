@@ -133,7 +133,7 @@ function boot() {
   var order = [MM_BROKERS[bIdx]].concat(MM_BROKERS.filter(function (x, i) { return i !== bIdx; })).filter(Boolean);
   var tryUrl = function (i) {
     if (i >= order.length) { st.textContent = '📴 Все брокеры резаны — роль офлайн.'; return; }
-    var c = mqtt.connect(order[i], { clientId: 'ph' + Math.random().toString(36).slice(2, 8), reconnectPeriod: 60000, connectTimeout: 5000 });
+    var c = mqtt.connect(order[i], { clientId: 'ph' + Math.random().toString(36).slice(2, 8), reconnectPeriod: 3000, connectTimeout: 5000, keepalive: 30 });
     var to = setTimeout(function () { c.end(true); tryUrl(i + 1); }, 5000);
     c.on('connect', function () {
       clearTimeout(to);
@@ -143,9 +143,13 @@ function boot() {
       cli.publish('mm145/' + room + '/up', JSON.stringify({ type: 'hello', name: myName }));
       st.textContent = '🔗 На связи с городом: пульт активен.';
     });
+    c.on('reconnect', function () { st.textContent = '📡 переподключение…'; });
+    c.on('close', function () { if (cli === c) st.textContent = '📡 связь потеряна, переподключение…'; });
     c.on('error', function () { clearTimeout(to); c.end(true); tryUrl(i + 1); });
     c.on('message', function (t, p) { try { handle(JSON.parse(p.toString())); } catch (e) {} });
   };
+  tryUrl(0);
+}
   tryUrl(0);
 }
 if (room) {
