@@ -4779,3 +4779,27 @@ window.showModal = function (html, opts) {
   setTimeout(() => injectArts143(), 80);
   return pr;
 };
+// ============================================
+// ДОПОЛНЕНИЕ v144 — PEERJS С ТРЁХ CDN + ДИАГНОСТИКА В КОНСОЛЬ
+// ============================================
+function loadPeerJS135() {
+  return new Promise((res, rej) => {
+    if (window.Peer) { console.log('📡 PeerJS уже на борту'); return res(); }
+    const urls = [
+      'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js',
+      'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js'
+    ];
+    let i = 0;
+    const next = () => {
+      if (i >= urls.length) { console.log('❌ PeerJS: все CDN недоступны'); return rej(new Error('no peerjs cdn')); }
+      const u = urls[i++];
+      const s = document.createElement('script');
+      s.src = u;
+      s.onload = () => { if (window.Peer) { console.log('📡 PeerJS загружен с', u); res(); } else next(); };
+      s.onerror = () => { console.log('⚠️ CDN не ответил:', u); next(); };
+      document.head.appendChild(s);
+    };
+    next();
+  });
+}
