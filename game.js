@@ -4408,3 +4408,46 @@ window.updateUI = function () {
     });
   }
 };
+// ============================================
+// ДОПОЛНЕНИЕ v135 — QR-LIVE: РОЛИ НА ТЕЛЕФОНЫ ЧЕРЕЗ PEERJS (GitHub Pages)
+// ============================================
+function loadPeerJS135() {
+  return new Promise((res, rej) => {
+    if (window.Peer) return res();
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+    s.onload = () => res(); s.onerror = () => rej(new Error('no peerjs'));
+    document.head.appendChild(s);
+  });
+}
+window.showQRScreen = async function () {
+  const humans = S.players.filter(p => !p.isBot);
+  let peer = null, phoneUrl = '';
+  try {
+    await loadPeerJS135();
+    const roomId = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
+    peer = new Peer(roomId);
+    await new Promise((res, rej) => { peer.on('open', res); peer.on('error', rej); setTimeout(() => rej(new Error('timeout')), 7000); });
+    phoneUrl = location.href.split('#')[0].replace(/[^/]*$/, '') + 'phone.html#room=' + roomId;
+  } catch (e) { peer = null; }
+  const qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=430x430&data=' + encodeURIComponent(phoneUrl || (location.href.split('#')[0].replace(/[^/]*$/, '') + 'phone.html'));
+  const conns = [];
+  if (peer) peer.on('connection', conn => {
+    conn.on('open', () => {
+      const p = humans[conns.length];
+      conns.push(conn);
+      if (p) {
+        conn.send({ type: 'role', name: p.name, role: p.role, color: p.color });
+        const el = document.getElementById('qr135-' + (conns.length - 1));
+        if (el) { el.textContent = '✅ ' + p.name + ' — роль на телефоне'; el.style.color = '#7cfc9a'; }
+      }
+    });
+  });
+  const rows = humans.map((p, i) => '<div id="qr135-' + i + '" style="font-size:13px;color:#8a93af;padding:2px 0">⏳ ' + p.name + ' — не подключился</div>').join('');
+  await showModal('<h2>📱 Игра с QR — живая</h2>' +
+    '<p>Каждый сканирует ОДИН QR со своего телефона — роль придёт секретно (порядок: ' + humans.map(h => h.name).join(', ') + ').</p>' +
+    '<div style="display:flex;justify-content:center;padding:10px"><div style="background:#fff;padding:12px;border-radius:14px"><img src="' + qrSrc + '" style="width:min(380px,70vw);display:block"></div></div>' +
+    '<div style="text-align:center">' + rows + '</div>' +
+    '<button data-v="go">🎲 Начать!</button><button data-v="skip">🙈 Без телефонов</button>');
+  if (peer) window.MM_PEER = peer; // держим связь для следующих этапов
+};

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ММ — твоя роль</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+  body{margin:0;background:#0a0e20;color:#dfe6ff;font-family:Segoe UI,Arial;display:flex;min-height:100vh;align-items:center;justify-content:center}
+  .card{width:min(92vw,380px);border:3px solid #d4af37;border-radius:16px;padding:22px;text-align:center;background:linear-gradient(160deg,#141a35,#0a0e20);box-shadow:0 0 40px rgba(212,175,55,.35)}
+  h1{color:#d4af37;letter-spacing:2px;font-size:18px}
+  #role{font-size:26px;font-weight:900;margin:10px 0}
+  #desc{font-size:13px;line-height:1.5;opacity:.85}
+  #status{margin-top:14px;font-size:12px;color:#8a93af}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🕵️ MURDER MONOPOLY</h1>
+  <div id="status">Подключение к городу…</div>
+  <div id="role" style="display:none"></div>
+  <div id="desc" style="display:none"></div>
+</div>
+<script>
+const room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
+const st = document.getElementById('status');
+if (!room) { st.textContent = '❌ Нет комнаты в ссылке — отсканируй QR заново.'; }
+else {
+  const peer = new Peer();
+  peer.on('open', () => { st.textContent = '📡 Ищу город…'; peer.connect(room, { reliable: true }); });
+  peer.on('error', e => { st.textContent = '❌ Ошибка связи: ' + e.type; });
+  peer.on('connection', conn => {
+    conn.on('open', () => { st.textContent = '🔗 Подключено! Жду роль…'; });
+    conn.on('data', d => {
+      if (d.type === 'role') {
+        st.textContent = '🤫 Это твой секрет. Не показывай никому!';
+        const r = document.getElementById('role');
+        r.style.display = 'block';
+        r.style.color = d.color || '#ffd54f';
+        r.textContent = ({ sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civilian: '🕊 МИРНЫЙ', cop: '🦹 ПРОДАЖНЫЙ КОП' })[d.role] || d.role;
+        const desc = document.getElementById('desc');
+        desc.style.display = 'block';
+        desc.textContent = 'Ты играешь за: ' + d.name;
+      }
+      if (d.type === 'text') st.textContent = d.text;
+    });
+    conn.on('close', () => { st.textContent = '📴 Связь с городом потеряна.'; });
+  });
+}
+</script>
+</body>
+</html>
