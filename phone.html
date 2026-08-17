@@ -46,31 +46,33 @@
   </div>
 </div>
 <script>
-window.onerror = m => { document.getElementById('status').textContent = '❌ JS: ' + m; };
-const ROLN = { sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civilian: '🕊 МИРНЫЙ', cop: '🦹 ПРОДАЖНЫЙ КОП' };
-const st = document.getElementById('status');
-const rdata = (location.hash.match(/r=([^&]+)/) || [])[1];
-const room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
-let myName = null, cli = null;
+window.onerror = function (m) { document.getElementById('status').textContent = '❌ JS: ' + m; };
+var ROLN = { sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civilian: '🕊 МИРНЫЙ', cop: '🦹 ПРОДАЖНЫЙ КОП' };
+var st = document.getElementById('status');
+var rdata = (location.hash.match(/r=([^&]+)/) || [])[1];
+var room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
+var bIdx = parseInt(((location.hash.match(/b=(\d+)/) || [])[1] || '0'), 10);
+var myName = null, cli = null;
 function showRole(d) {
   myName = d.n;
   st.textContent = '🤫 Это твой секрет — никому не показывай!';
-  const r = document.getElementById('role');
+  var r = document.getElementById('role');
   r.style.display = 'block'; r.style.color = d.c || '#ffd54f';
   r.textContent = ROLN[d.r] || d.r;
-  const w = document.getElementById('who'); w.style.display = 'block'; w.textContent = 'Ты играешь за: ' + d.n;
+  var w = document.getElementById('who'); w.style.display = 'block'; w.textContent = 'Ты играешь за: ' + d.n;
 }
 function handle(d) {
   if (d.type === 'role') showRole({ n: d.name, r: d.role, c: d.color });
   if (d.type === 'state') {
-    const ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.lastLog || '…';
+    var ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.lastLog || '…';
     document.getElementById('dash').style.display = 'block';
     document.getElementById('remote').style.display = 'flex';
     document.getElementById('turn').textContent = 'Раунд ' + d.round + ' · ходит: ' + d.turn;
-    const my = d.turn === myName;
+    var my = d.turn === myName;
     document.getElementById('btn-roll').disabled = !my;
     document.getElementById('btn-end').disabled = !my;
-    const me = d.players.find(p => p.name === myName);
+    var me = null;
+    for (var i = 0; i < d.players.length; i++) if (d.players[i].name === myName) me = d.players[i];
     if (me) {
       document.getElementById('s-coins').textContent = me.coins;
       document.getElementById('s-sus').textContent = me.suspect;
@@ -79,23 +81,22 @@ function handle(d) {
       document.getElementById('s-tok').textContent = me.tokens;
     }
   }
-  if (d.type === 'text') { const ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.text; }
+  if (d.type === 'text') { var ev2 = document.getElementById('event'); ev2.style.display = 'block'; ev2.textContent = d.text; }
 }
-document.getElementById('btn-roll').onclick = () => { if (cli && myName) cli.publish('mm145/' + room + '/up', JSON.stringify({ name: myName, d: { cmd: 'roll' } })); };
-document.getElementById('btn-end').onclick = () => { if (cli && myName) cli.publish('mm145/' + room + '/up', JSON.stringify({ name: myName, d: { cmd: 'end' } })); };
+document.getElementById('btn-roll').onclick = function () { if (cli && myName) cli.publish('mm145/' + room + '/up', JSON.stringify({ name: myName, d: { cmd: 'roll' } })); };
+document.getElementById('btn-end').onclick = function () { if (cli && myName) cli.publish('mm145/' + room + '/up', JSON.stringify({ name: myName, d: { cmd: 'end' } })); };
 if (rdata) {
   try { showRole(JSON.parse(decodeURIComponent(escape(atob(rdata))))); }
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
 }
-const MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
+var MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
 function boot() {
-  const bIdx = parseInt(((location.hash.match(/b=(\d+)/) || [])[1] || '0'), 10);
-  const order = [MM_BROKERS[bIdx]].concat(MM_BROKERS.filter((x, i) => i !== bIdx)).filter(Boolean);
-  const tryUrl = i => {
+  var order = [MM_BROKERS[bIdx]].concat(MM_BROKERS.filter(function (x, i) { return i !== bIdx; })).filter(Boolean);
+  var tryUrl = function (i) {
     if (i >= order.length) { st.textContent = '📴 Все брокеры резаны — роль офлайн.'; return; }
-    const c = mqtt.connect(order[i], { clientId: 'ph' + Math.random().toString(36).slice(2, 8), reconnectPeriod: 60000, connectTimeout: 5000 });
-    const to = setTimeout(() => { c.end(true); tryUrl(i + 1); }, 5000);
-    c.on('connect', () => {
+    var c = mqtt.connect(order[i], { clientId: 'ph' + Math.random().toString(36).slice(2, 8), reconnectPeriod: 60000, connectTimeout: 5000 });
+    var to = setTimeout(function () { c.end(true); tryUrl(i + 1); }, 5000);
+    c.on('connect', function () {
       clearTimeout(to);
       cli = c;
       cli.subscribe('mm145/' + room + '/down/all');
@@ -103,24 +104,22 @@ function boot() {
       cli.publish('mm145/' + room + '/up', JSON.stringify({ type: 'hello', name: myName }));
       st.textContent = '🔗 На связи с городом: пульт активен.';
     });
-    c.on('error', () => { clearTimeout(to); c.end(true); tryUrl(i + 1); });
-    c.on('message', (t, p) => { try { handle(JSON.parse(p.toString())); } catch (e) {} });
+    c.on('error', function () { clearTimeout(to); c.end(true); tryUrl(i + 1); });
+    c.on('message', function (t, p) { try { handle(JSON.parse(p.toString())); } catch (e) {} });
   };
   tryUrl(0);
 }
-  tryUrl(0);
-}
 if (room) {
-  if (window.mqtt) boot();
+  if (window.mqtt) { boot(); }
   else {
-    const s = document.createElement('script');
+    var s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/mqtt@5.7.0/dist/mqtt.min.js';
     s.onload = boot;
-    s.onerror = () => { st.textContent = '📴 Нет MQTT-библиотеки — роль офлайн.'; };
+    s.onerror = function () { st.textContent = '📴 Нет MQTT-библиотеки — роль офлайн.'; };
     document.head.appendChild(s);
   }
 } else if (!rdata) {
-  st.textContent = '❌ Нет данных — отсканируй QR зановно.';
+  st.textContent = '❌ Нет данных — отсканируй QR заново.';
 }
 </script>
 </body>
