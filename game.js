@@ -4931,3 +4931,57 @@ function qrState138() {
     });
   } catch (e) {}
 }
+// ============================================
+// ДОПОЛНЕНИЕ v149 — QR НЕСЁТ НОМЕР БРОКЕРА: ПК И ТЕЛЕФОН В ОДНОЙ ВСЕЛЕННОЙ
+// ============================================
+async function mmStartPc145() {
+  await mmLoad145();
+  const room = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
+  let client = null, b = 0;
+  for (let i = 0; i < MM_BROKERS147.length; i++) {
+    try { client = await mmConnect147(MM_BROKERS147[i], 'pc'); b = i; console.log('🌐 Брокер ПК:', MM_BROKERS147[i]); break; }
+    catch (e) { console.log('⚠️ Брокер не ответил:', MM_BROKERS147[i]); }
+  }
+  if (!client) throw new Error('all brokers dead');
+  client.subscribe('mm145/' + room + '/up');
+  mmBus145 = { client: client, room: room, joined: {}, b: b };
+  client.on('message', (topic, payload) => {
+    try {
+      const m = JSON.parse(payload.toString());
+      if (m.type === 'hello' && m.name) {
+        mmBus145.joined[m.name] = true;
+        const p = S && S.players.find(x => x.name === m.name);
+        if (p) mmSend145(m.name, { type: 'role', name: p.name, role: p.role, color: p.color });
+        console.log('📱 Телефон подключился:', m.name);
+      } else if (m.name && m.d) phoneCmd141(m.d, { _mmName: m.name });
+    } catch (e) {}
+  });
+  return room;
+}
+async function qrSeq111(oldHtml) {
+  try { await loadQRious137(); } catch (e) {}
+  let room = '';
+  try { room = await mmStartPc145(); console.log('🌐 Комната MQTT создана:', room); } catch (e) { console.log('❌ MQTT не завёлся:', e && e.message); }
+  const base = location.href.split('#')[0].replace(/[^/]*$/, '') + 'phone.html';
+  const bIdx = mmBus145 ? mmBus145.b : 0;
+  const list = S.players.filter(p => !p.isBot);
+  const items = list.map(p => {
+    let src = '';
+    try {
+      const link = base + '#r=' + btoa(unescape(encodeURIComponent(JSON.stringify({ n: p.name, r: p.role, c: p.color })))) + (room ? '&room=' + room + '&b=' + bIdx : '');
+      src = new QRious({ value: link, size: 460, level: 'M' }).toDataURL();
+    } catch (e) {}
+    return { name: p.name, src: src };
+  }).filter(x => x.src);
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    await _sm111('<h2>📱 ' + it.name + ' — отсканируй свою роль</h2>' +
+      '<p>Передай устройство игроку <b>' + it.name + '</b>. Остальные — не подглядывать!</p>' +
+      '<div style="display:flex;justify-content:center;padding:14px"><div style="background:#fff;padding:14px;border-radius:16px;box-shadow:0 0 40px rgba(212,175,55,.45)">' +
+      '<img src="' + it.src + '" style="width:min(430px,72vw);height:auto;display:block">' +
+      '<div style="color:#000;text-align:center;font-weight:900;letter-spacing:2px;font-size:20px;padding-top:8px">' + it.name + '</div></div></div>' +
+      '<p style="text-align:center;opacity:.6;font-size:12px">Плашка ' + (i + 1) + ' из ' + items.length + ' · роль и пульт откроются на телефоне</p>' +
+      '<button data-v="next">✅ ' + it.name + ' отсканировал — дальше</button>');
+  }
+  return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p style="opacity:.7">Город просыпается…</p><button data-v="go">🎲 Начать!</button>');
+}
