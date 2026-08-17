@@ -4643,3 +4643,45 @@ async function qrSeq111(oldHtml) {
   }
   return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p style="opacity:.7">Город просыпается…</p><button data-v="go">🎲 Начать!</button>');
 }
+// ============================================
+// ДОПОЛНЕНИЕ v141 — ОДИН QR НА ВСЕХ + ТЕЛЕФОН-ПУЛЬТ (кубик/ход с телефона)
+// ============================================
+function phoneCmd141(d, conn) {
+  if (!S || !d || !d.cmd) return;
+  const cur = S.players[S.cur];
+  if (!cur || cur.isBot || cur.name !== conn._mmName) return; // только свой ход
+  if (d.cmd === 'roll') { const b = document.getElementById('rollBtn'); if (b && !b.disabled && !S.isBusy) rollDice(); }
+  if (d.cmd === 'end') { const b = document.getElementById('endBtn'); if (b && !b.disabled) endTurn(); }
+}
+window.showQRScreen = async function () {
+  const humans = S.players.filter(p => !p.isBot);
+  let peer = null, phoneUrl = '';
+  try {
+    await loadPeerJS135();
+    await loadQRious137();
+    const roomId = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
+    peer = new Peer(roomId);
+    await new Promise((res, rej) => { peer.on('open', res); peer.on('error', rej); setTimeout(() => rej(new Error('timeout')), 7000); });
+    phoneUrl = location.href.split('#')[0].replace(/[^/]*$/, '') + 'phone.html#room=' + roomId;
+  } catch (e) { peer = null; }
+  if (!peer) return qrSeq111(''); // PeerJS не завёлся — старые надёжные плашки
+  window.MM_PEER = peer;
+  const qrSrc = new QRious({ value: phoneUrl, size: 460, level: 'M' }).toDataURL();
+  const conns = [];
+  peer.on('connection', conn => {
+    conn.on('open', () => {
+      const p = humans[conns.length];
+      conns.push(conn);
+      if (p) { conn._mmName = p.name; conn.send({ type: 'role', name: p.name, role: p.role, color: p.color }); }
+      const el = document.getElementById('qr141-' + (conns.length - 1));
+      if (el) { el.textContent = '✅ ' + (p ? p.name : 'гость') + ' — на связи: роль и пульт на телефоне'; el.style.color = '#7cfc9a'; }
+    });
+    conn.on('data', d => phoneCmd141(d, conn));
+  });
+  const rows = humans.map((p, i) => '<div id="qr141-' + i + '" style="font-size:13px;color:#8a93af;padding:2px 0">⏳ ' + p.name + ' — не в сети</div>').join('');
+  const ch = await showModal('<h2>📱 Один QR на всех</h2><p>Каждый сканирует со своего телефона: секретная роль + живой пульт (🎲 кубик, ✅ ход, статистика, события).</p>' +
+    '<div style="display:flex;justify-content:center;padding:10px"><div style="background:#fff;padding:12px;border-radius:14px"><img src="' + qrSrc + '" style="width:min(380px,70vw);display:block"></div></div>' +
+    '<div style="text-align:center">' + rows + '</div>' +
+    '<button data-v="go">🎲 Начать!</button><button data-v="seq">🙈 Плашки по очереди</button>');
+  if (ch === 'seq') return qrSeq111('');
+};
