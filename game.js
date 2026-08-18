@@ -5715,3 +5715,57 @@ window.showModal = function (html, opts) {
   }
   return _sm169(h, opts);
 };
+// ============================================
+// ДОПОЛНЕНИЕ v171 — КАНАЛ НА MQTT: ВСЕ БРОКЕРЫ ОДНОВРЕМЕННО, БЕЗ ЛИМИТОВ
+// ============================================
+function loadMqtt171() {
+  return new Promise((res, rej) => {
+    if (window.mqtt) return res();
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js';
+    s.onload = () => res(); s.onerror = () => rej(new Error('no mqtt'));
+    document.head.appendChild(s);
+  });
+}
+const MM_BROKERS171 = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
+const seen171 = {};
+function onUp171(payload) {
+  try {
+    const key = payload;
+    const now = Date.now();
+    if (seen171[key] && now - seen171[key] < 800) return;
+    seen171[key] = now;
+    const m = JSON.parse(payload);
+    if (m.type === 'hello' && m.name) {
+      mmBus145.joined[m.name] = true;
+      const p = S && S.players.find(x => x.name === m.name);
+      if (p) mmSend145(m.name, { type: 'role', name: p.name, role: p.role, color: p.color });
+      console.log('📱 Телефон подключился:', m.name);
+    } else if (m.name && m.d) phoneCmd141(m.d, { _mmName: m.name });
+  } catch (e) {}
+}
+async function mmStartPc145() {
+  await loadMqtt171();
+  const room = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
+  mmBus145 = { room: room, joined: {}, clients: [] };
+  MM_BROKERS171.forEach(url => {
+    try {
+      const c = mqtt.connect(url, { reconnectPeriod: 5000, connectTimeout: 6000 });
+      c.on('connect', () => { c.subscribe('mm145_' + room + '_up'); });
+      c.on('message', (t, buf) => onUp171(buf.toString()));
+      mmBus145.clients.push(c);
+    } catch (e) {}
+  });
+  console.log('🌐 Комната MQTT создана:', room);
+  return room;
+}
+function mmSend145(name, obj) {
+  if (!mmBus145) return;
+  const s = JSON.stringify(obj);
+  mmBus145.clients.forEach(c => { if (c.connected) c.publish('mm145_' + mmBus145.room + '_down_' + name, s); });
+}
+function qrBroadcast138(msg) {
+  if (!mmBus145) return;
+  const s = JSON.stringify(msg);
+  mmBus145.clients.forEach(c => { if (c.connected) c.publish('mm145_' + mmBus145.room + '_down_all', s); });
+}
