@@ -2,7 +2,6 @@
   "name": "murder-monopoly",
   "compatibility_date": "2026-01-01",
   "assets": {
-    "directory": "./",
-    "exclude": [".git/**", ".github/**", ".gitignore", "video/bg.mp4"]
+    "directory": "./out"
   }
 }
