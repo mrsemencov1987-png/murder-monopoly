@@ -5365,3 +5365,64 @@ function handFromDom158() {
   const min = document.getElementById('zmin151');
   if (min) min.parentElement.appendChild(btn);
 })();
+// ============================================
+// ДОПОЛНЕНИЕ v160 — КНОПКИ В ИГРОВУЮ ШАПКУ, ГОЛОС 3 СЕК, АДАПТАЦИЯ ПОД ТЕЛЕФОН
+// ============================================
+// 1) Зум/ТВ/🎬 — в шапку игры (.header-left), на меню скрыты
+(function () {
+  function place160() {
+    const min = document.getElementById('zmin151');
+    const bar = min ? min.parentElement : null;
+    if (!bar) return;
+    const gs = document.getElementById('gameScreen');
+    const hl = document.querySelector('#gameScreen .header-left');
+    const gameOn = gs && gs.style.display !== 'none';
+    bar.style.display = gameOn ? 'inline-flex' : 'none';
+    if (hl && bar.parentElement !== hl) {
+      bar.style.position = 'static'; bar.style.marginLeft = '8px'; bar.style.verticalAlign = 'middle'; bar.style.gap = '6px';
+      hl.appendChild(bar);
+    }
+  }
+  setInterval(place160, 2000); setTimeout(place160, 800);
+})();
+// 2) «Голос улиц» — гаснет через 3 секунды
+const _sm160 = window.showModal;
+window.showModal = function (html, opts) {
+  const pr = _sm160(html, opts);
+  if (/услышал/i.test(html || '')) {
+    setTimeout(() => {
+      const btn = [...document.querySelectorAll('#overlay button, .modal button, [class*="modal"] button')].find(b => /услышал/i.test(b.textContent));
+      if (btn) btn.click();
+    }, 3000);
+  }
+  return pr;
+};
+// 3) Настоящая адаптация под узкие экраны (по реальной разметке)
+(function () {
+  const stl = document.createElement('style');
+  stl.textContent = '@media (max-width:900px){' +
+    'body{overflow:auto!important}' +
+    '#gameScreen{height:auto!important;overflow:visible!important;display:block!important}' +
+    '.game-header{flex-wrap:wrap;height:auto!important;padding:6px!important;gap:6px}' +
+    '.header-left,.header-center,.header-right{width:auto!important}' +
+    '.header-right{flex-wrap:wrap;justify-content:flex-start}' +
+    '.game-main{flex-direction:column!important;height:auto!important;overflow:visible!important}' +
+    '#boardWrapper{width:100%!important;overflow-x:auto!important}' +
+    '.side-panel,.right-panel{width:100%!important;max-height:none!important;overflow:visible!important;position:static!important}' +
+    '.bottom-panel{position:static!important}' +
+    '#overlay>div,.modal{width:92vw!important;max-width:92vw!important;max-height:86vh!important;overflow:auto!important}' +
+    '}';
+  document.head.appendChild(stl);
+  function adapt160() {
+    const w = window.innerWidth;
+    const b = document.getElementById('board');
+    if (!b) return;
+    if (w < 1100) {
+      b.style.zoom = 1;
+      const bw = b.offsetWidth;
+      if (bw > w - 16) b.style.zoom = (w - 16) / bw;
+    }
+  }
+  window.addEventListener('resize', adapt160);
+  setTimeout(adapt160, 1200); setTimeout(adapt160, 3000); setTimeout(adapt160, 6000);
+})();
