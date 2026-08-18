@@ -6041,3 +6041,77 @@ window.phoneCmd141 = function (d, conn) {
   }
   return _pc179(d, conn);
 };
+// ============================================
+// ДОПОЛНЕНИЕ v180 — ОКНО ЖЕТОНОВ ТЕПЕРЬ И НА ТЕЛЕФОНЕ
+// ============================================
+function tokenBox180() {
+  return [...document.querySelectorAll('div,section')].find(el =>
+    el.offsetParent !== null &&
+    /Жетонов/i.test(el.textContent || '') &&
+    /можно потратить/i.test(el.textContent || '') &&
+    el.querySelector('button'));
+}
+function tokenButtons180() {
+  const box = tokenBox180();
+  if (!box) return [];
+  return [...box.querySelectorAll('button')].filter(b => b.offsetParent !== null);
+}
+// 1) Зеркало: как только окно появилось — шлём кнопки на телефон
+(function () {
+  let last180 = '';
+  setInterval(() => {
+    const btns = tokenButtons180();
+    const key = btns.map(b => (b.textContent || '').trim()).join('|');
+    if (key && key !== last180) {
+      last180 = key;
+      qrBroadcast138({ type: 'modal', title: '⚖ Жетоны детектива', buttons: btns.map(b => (b.textContent || '').trim()) });
+    }
+    if (!key) last180 = '';
+  }, 800);
+})();
+// 2) Клик с телефона попадает по нужной кнопке окна
+const _pc180 = phoneCmd141;
+window.phoneCmd141 = function (d, conn) {
+  if (d && d.cmd === 'modal') {
+    const ov = document.getElementById('overlay');
+    const ovOn = ov && ov.style.display !== 'none' && ov.innerHTML.trim();
+    const btns = tokenButtons180();
+    if (btns.length && !ovOn) {
+      const b = btns[d.i | 0];
+      if (b) { b.click(); return; }
+    }
+  }
+  return _pc180(d, conn);
+};
+// ============================================
+// ДОПОЛНЕНИЕ v181 — ОТКЛЮЧАЕМ МЁРТВЫЙ MOSQUITTO, НЕ ТРАТИМ СИЛЫ
+// ============================================
+setTimeout(() => {
+  if (mmBus145 && mmBus145.clients) {
+    mmBus145.clients.forEach(c => {
+      try {
+        if (c.options && /mosquitto/.test(c.options.hostname || '')) { c.end(true); console.log('🔕 mosquitto отключён (мертвец)'); }
+      } catch (e) {}
+    });
+  }
+}, 6000);
+// ============================================
+// ДОПОЛНЕНИЕ v182 — ЗЕРКАЛО С ПОВТОРОМ: ТЕЛЕФОН НЕ ПРОПУСКАЕТ ОКНА
+// ============================================
+const _qb182 = qrBroadcast138;
+window.qrBroadcast138 = function (msg) {
+  if (msg && msg.type === 'modal') { window._mirror182 = msg; window._mirror182t = 0; }
+  return _qb182(msg);
+};
+setInterval(() => {
+  const ov = document.getElementById('overlay');
+  const ovOn = ov && ov.style.display !== 'none' && ov.innerHTML.trim();
+  const voiceOn = [...document.querySelectorAll('button')].some(b => /услышал/i.test(b.textContent || '') && b.offsetParent !== null);
+  const tokOn = window.tokenBox180 ? tokenBox180() : null;
+  if (ovOn || voiceOn || tokOn) {
+    if (window._mirror182 && Date.now() - (window._mirror182t || 0) > 2500) {
+      window._mirror182t = Date.now();
+      _qb182(window._mirror182);
+    }
+  } else window._mirror182 = null;
+}, 1200);
