@@ -5882,3 +5882,51 @@ async function qrSeq111(oldHtml) {
   }
   return sm('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p>Город просыпается…</p><button data-val="start" ' + btnStyle + '>🎲 Начать!</button>');
 }
+// ============================================
+// ДОПОЛНЕНИЕ v176 — QR БУДЕТ ВСЕГДА: 3 CDN + ЗАПАСНОЙ ГЕНЕРАТОР
+// ============================================
+function loadQRious137() {
+  return new Promise(res => {
+    if (window.QRious) return res();
+    const urls = ['https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js', 'https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js', 'https://unpkg.com/qrious@4.0.2/dist/qrious.min.js'];
+    let i = 0;
+    const next = () => {
+      if (i >= urls.length) return res();
+      const s = document.createElement('script');
+      s.src = urls[i++];
+      s.onload = () => res();
+      s.onerror = next;
+      document.head.appendChild(s);
+    };
+    next();
+  });
+}
+async function qrSeq111(oldHtml) {
+  try { await loadQRious137(); } catch (e) {}
+  console.log('🔳 QRious загружен:', !!window.QRious);
+  if (!mmBus145) { try { await mmStartPc145(); } catch (e) {} }
+  const base = location.href.split('#')[0].replace(/[^/]*$/, '') + 'phone.html';
+  const list = S.players.filter(p => !p.isBot);
+  const items = list.map(p => {
+    let src = '';
+    const rolePart = btoa(unescape(encodeURIComponent(JSON.stringify({ n: p.name, r: p.role, c: p.color }))));
+    const url = base + '#room=' + (mmBus145 ? mmBus145.room : '') + '&r=' + rolePart;
+    if (window.QRious) {
+      try { src = new QRious({ value: url, size: 460, level: 'M' }).toDataURL(); } catch (e) {}
+    }
+    if (!src) src = 'https://api.qrserver.com/v1/create-qr-code/?size=430x430&data=' + encodeURIComponent(url);
+    return { name: p.name, src: src, url: url };
+  });
+  const sm = window.showModal;
+  const btnStyle = 'style="padding:12px 24px;margin-top:12px;font-size:16px;font-weight:bold;cursor:pointer;background:#d4af37;color:#0a0e20;border:none;border-radius:8px;"';
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    await sm('<h2>📱 ' + it.name + ' — отсканируй свою роль</h2>' +
+      '<p>Передай устройство игроку <b>' + it.name + '</b>. Остальные — не подглядывать!</p>' +
+      '<div style="background:#fff;padding:14px;border-radius:12px;display:inline-block;margin:10px 0"><img src="' + it.src + '" style="width:min(300px,62vw);display:block"></div>' +
+      '<div style="font-weight:bold;font-size:18px;margin:8px 0">' + it.name + '</div>' +
+      '<p>Плашка ' + (i + 1) + ' из ' + items.length + ' · роль и пульт придут на телефон</p>' +
+      '<button data-val="ok" ' + btnStyle + '>✅ ' + it.name + ' отсканировал — дальше</button>');
+  }
+  return sm('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p>Город просыпается…</p><button data-val="start" ' + btnStyle + '>🎲 Начать!</button>');
+}
