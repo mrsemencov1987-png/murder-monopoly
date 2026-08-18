@@ -5685,3 +5685,17 @@ function openES167() {
   };
   es.onerror = () => { if (es.readyState === 2) setTimeout(openES167, 3000); };
 }
+es.onmessage = e => {
+  try {
+    const outer = JSON.parse(e.data);
+    const m = JSON.parse(outer.message);
+    if (m.type === 'hello' && m.name) {
+      mmBus145.joined[m.name] = true;
+      const p = S && S.players.find(x => x.name === m.name);
+      if (p) mmSend145(m.name, { type: 'role', name: p.name, role: p.role, color: p.color });
+      // СРАЗУ шлём state этому игроку, чтобы он понял что жив
+      setTimeout(() => { qrState138(); qrBroadcast138({ type: 'ping' }); }, 100);
+      console.log('📱 Телефон подключился:', m.name);
+    } else if (m.name && m.d) phoneCmd141(m.d, { _mmName: m.name });
+  } catch (err) {}
+};
