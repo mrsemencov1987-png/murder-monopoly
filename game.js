@@ -5769,3 +5769,51 @@ function qrBroadcast138(msg) {
   const s = JSON.stringify(msg);
   mmBus145.clients.forEach(c => { if (c.connected) c.publish('mm145_' + mmBus145.room + '_down_all', s); });
 }
+// ============================================
+// ДОПОЛНЕНИЕ v172 — ДВОЙНОЙ КАНАЛ: MQTT (3 CDN) + NTFY-РЕЗЕРВ
+// ============================================
+const MQTT_CDNS172 = ['https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js', 'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js', 'https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js'];
+function loadMqtt171() {
+  return new Promise(res => {
+    if (window.mqtt) return res();
+    let i = 0;
+    const next = () => { if (i >= MQTT_CDNS172.length) return res(); const s = document.createElement('script'); s.src = MQTT_CDNS172[i++]; s.onload = () => res(); s.onerror = next; document.head.appendChild(s); };
+    next();
+  });
+}
+function ntfyPub172(topic, s) { fetch(MM_NTFY + '/' + topic, { method: 'POST', body: s }).catch(() => {}); }
+async function mmStartPc145() {
+  await loadMqtt171();
+  const room = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
+  mmBus145 = { room: room, joined: {}, clients: [], ntfyLast: 0 };
+  if (window.mqtt) {
+    MM_BROKERS171.forEach(url => {
+      try {
+        const c = mqtt.connect(url, { reconnectPeriod: 5000, connectTimeout: 6000 });
+        c.on('connect', () => { c.subscribe('mm145_' + room + '_up'); console.log('📡 ПК на брокере:', url); });
+        c.on('message', (t, buf) => onUp171(buf.toString()));
+        mmBus145.clients.push(c);
+      } catch (e) {}
+    });
+  } else console.log('⚠️ MQTT не загрузился — остаётся ntfy');
+  const es = new EventSource(MM_NTFY + '/mm145_' + room + '_up/sse');
+  es.onmessage = e => { try { const o = JSON.parse(e.data); onUp171(o.message); } catch (err) {} };
+  console.log('🌐 Комната создана:', room, '(mqtt+ntfy)');
+  return room;
+}
+function mmSend145(name, obj) {
+  if (!mmBus145) return;
+  const s = JSON.stringify(obj);
+  mmBus145.clients.forEach(c => { if (c.connected) c.publish('mm145_' + mmBus145.room + '_down_' + name, s); });
+  ntfyPub172('mm145_' + mmBus145.room + '_down_' + name, s);
+}
+function qrBroadcast138(msg) {
+  if (!mmBus145) return;
+  const s = JSON.stringify(msg);
+  mmBus145.clients.forEach(c => { if (c.connected) c.publish('mm145_' + mmBus145.room + '_down_all', s); });
+  const now = Date.now();
+  if (msg.type !== 'state' || now - mmBus145.ntfyLast > 10000) {
+    if (msg.type === 'state') mmBus145.ntfyLast = now;
+    ntfyPub172('mm145_' + mmBus145.room + '_down_all', s);
+  }
+}
