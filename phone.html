@@ -76,14 +76,29 @@
 </div>
 <script>
 window.onerror = function (m) { document.getElementById('status').textContent = '❌ JS: ' + m; };
-var MM_NTFY = 'https://ntfy.sh';
+var MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
 var ROLN = { sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civilian: '🕊 МИРНЫЙ', cop: '🦹 ПРОДАЖНЫЙ КОП' };
 var st = document.getElementById('status');
 var rdata = (location.hash.match(/r=([^&]+)/) || [])[1];
 var room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
-var myName = null, cli = null, selKey = null;
-var esAll = null, esMe = null, lastMsg = Date.now();
-function send(d) { if (cli && room) cli.publish('mm145_' + room + '_up', JSON.stringify({ name: myName, d: d })); }
+var myName = null, selKey = null;
+var clients = [], seen = {}, lastMsg = Date.now();
+function loadMqtt(cb) {
+  if (window.mqtt) return cb();
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js';
+  s.onload = cb;
+  s.onerror = function () { st.textContent = '❌ не загрузилась библиотека связи'; };
+  document.head.appendChild(s);
+}
+function send(d) {
+  var s = JSON.stringify({ name: myName, d: d });
+  clients.forEach(function (c) { if (c.connected) c.publish('mm145_' + room + '_up', s); });
+}
+function hello() {
+  var s = JSON.stringify({ type: 'hello', name: myName });
+  clients.forEach(function (c) { if (c.connected) c.publish('mm145_' + room + '_up', s); });
+}
 function showRole(d) {
   myName = d.n;
   st.textContent = '🤫 Это твой секрет — никому не показывай!';
@@ -91,7 +106,7 @@ function showRole(d) {
   r.style.display = 'block'; r.style.color = d.c || '#ffd54f';
   r.textContent = ROLN[d.r] || d.r;
   var w = document.getElementById('who'); w.style.display = 'block'; w.textContent = 'Ты играешь за: ' + d.n;
-  openMe();
+  clients.forEach(function (c) { if (c.connected) c.subscribe('mm145_' + room + '_down_' + myName); });
 }
 function clearSel() {
   selKey = null;
@@ -100,9 +115,12 @@ function clearSel() {
   document.getElementById('card-cancel').style.display = 'none';
   [...document.getElementById('hand-row').children].forEach(function (x) { x.classList.remove('sel'); });
 }
-function onMsg(e) {
+function onPayload(topic, payload) {
+  var key = topic + ':' + payload;
+  if (seen[key]) return;
+  seen[key] = 1;
   lastMsg = Date.now();
-  try { var o = JSON.parse(e.data); handle(JSON.parse(o.message)); } catch (err) {}
+  try { handle(JSON.parse(payload)); } catch (e) {}
 }
 function handle(d) {
   if (d.type === 'role') showRole({ n: d.name, r: d.role, c: d.color });
@@ -183,31 +201,25 @@ if (rdata) {
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
 }
 if (room) {
-  cli = { publish: function (t, s) { fetch(MM_NTFY + '/' + t, { method: 'POST', body: s }); } };
-  function openAll() {
-    try { if (esAll) esAll.close(); } catch (e) {}
-    esAll = new EventSource(MM_NTFY + '/mm145_' + room + '_down_all/sse');
-    esAll.onmessage = onMsg;
-    esAll.onerror = function () {};
-  }
-  function openMe() {
-    if (!myName) return;
-    try { if (esMe) esMe.close(); } catch (e) {}
-    esMe = new EventSource(MM_NTFY + '/mm145_' + room + '_down_' + myName + '/sse');
-    esMe.onmessage = onMsg;
-    esMe.onerror = function () {};
-  }
-  openAll();
-  cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName }));
-  st.textContent = '🔗 На связи с городом: пульт активен.';
-  setInterval(function () { cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName })); }, 15000);
+  loadMqtt(function () {
+    MM_BROKERS.forEach(function (url) {
+      try {
+        var c = mqtt.connect(url, { reconnectPeriod: 5000, connectTimeout: 6000 });
+        c.on('connect', function () {
+          st.textContent = '🔗 На связи с городом: пульт активен.';
+          c.subscribe('mm145_' + room + '_down_all');
+          if (myName) c.subscribe('mm145_' + room + '_down_' + myName);
+          hello();
+        });
+        c.on('message', function (t, p) { onPayload(t, p.toString()); });
+        clients.push(c);
+      } catch (e) {}
+    });
+  });
+  st.textContent = ' подключаюсь к городу…';
+  setInterval(hello, 10000);
   setInterval(function () {
-    if (Date.now() - lastMsg > 30000) {
-      st.textContent = '📡 восстанавливаю связь…';
-      openAll(); openMe();
-      lastMsg = Date.now();
-      cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName }));
-    }
+    if (Date.now() - lastMsg > 25000) { st.textContent = '📡 восстанавливаю связь…'; hello(); }
   }, 8000);
 } else if (!rdata) {
   st.textContent = '❌ Нет данных — отсканируй QR заново.';
