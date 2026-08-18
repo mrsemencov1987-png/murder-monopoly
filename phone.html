@@ -77,7 +77,7 @@
 <script>
 window.onerror = function (m) { document.getElementById('status').textContent = '❌ JS: ' + m; };
 var MM_NTFY = 'https://ntfy.sh';
-var MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
+var MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt'];
 var MQTT_CDNS = ['https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js', 'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js', 'https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js'];
 var ROLN = { sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civilian: '🕊 МИРНЫЙ', cop: '🦹 ПРОДАЖНЫЙ КОП' };
 var st = document.getElementById('status');
@@ -228,7 +228,7 @@ function openNtfyMe() {
   esMe.onerror = function () {};
 }
 if (room) {
-  openNtfyAll();
+  // openNtfyAll();
   loadMqtt(function () {
     MM_BROKERS.forEach(function (url) {
       try {
@@ -252,6 +252,7 @@ if (room) {
 } else if (!rdata) {
   st.textContent = '❌ Нет данных — отсканируй QR заново.';
 }
+ntfyPub = function () {};
 </script>
 </body>
 </html>
