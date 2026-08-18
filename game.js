@@ -5836,3 +5836,31 @@ function qrBroadcast138(msg) {
   new MutationObserver(sweep173).observe(document.body, { childList: true, subtree: true });
   setInterval(sweep173, 700);
 })();
+// ============================================
+// ДОПОЛНЕНИЕ v174 — QR НЕСЁТ И РОЛЬ, И АДРЕС КОМНАТЫ
+// ============================================
+async function qrSeq111(oldHtml) {
+  try { await loadQRious137(); } catch (e) {}
+  if (!mmBus145) { try { await mmStartPc145(); } catch (e) {} }
+  const base = location.href.split('#')[0].replace(/[^/]*$/, '') + 'phone.html';
+  const list = S.players.filter(p => !p.isBot);
+  const items = list.map(p => {
+    let src = '';
+    try {
+      const rolePart = btoa(unescape(encodeURIComponent(JSON.stringify({ n: p.name, r: p.role, c: p.color }))));
+      const url = base + '#room=' + mmBus145.room + '&r=' + rolePart;
+      src = new QRious({ value: url, size: 460, level: 'M' }).toDataURL();
+    } catch (e) {}
+    return { name: p.name, src: src };
+  }).filter(x => x.src);
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    await _sm111('<h2>📱 ' + it.name + ' — отсканируй свою роль</h2>' +
+      '<p>Передай устройство игроку <b>' + it.name + '</b>. Остальные — не подглядывать!</p>' +
+      '<div style="background:#fff;padding:14px;border-radius:12px;display:inline-block"><img src="' + it.src + '" style="width:min(300px,62vw);display:block"></div>' +
+      '<div>' + it.name + '</div>' +
+      '<p>Плашка ' + (i + 1) + ' из ' + items.length + ' · роль и пульт придут на телефон</p>' +
+      '<button data-val="ok">✅ ' + it.name + ' отсканировал — дальше</button>');
+  }
+  return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p>Город просыпается…</p><button data-val="start">🎲 Начать!</button>');
+}
