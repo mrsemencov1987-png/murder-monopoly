@@ -5623,3 +5623,34 @@ function qrState138() {
     document.head.appendChild(stl);
   }, 1000);
 })();
+// ============================================
+// ДОПОЛНЕНИЕ v166 — ГОЛОС УЛИЦ НА ТЕЛЕФОНЕ: НЕ СЪЕЗЖАЕТ И НЕ ЗАКРЫВАЕТ ПРАВИЛА
+// ============================================
+(function () {
+  const stl = document.createElement('style');
+  stl.textContent =
+    '@media (max-width:900px){' +
+    '#overlay>div{display:flex!important;flex-direction:column!important;align-items:center!important;text-align:center!important;overflow-x:hidden!important}' +
+    '#overlay>div img{max-width:82vw!important;max-height:38vh!important;width:auto!important;height:auto!important}' +
+    '#overlay>div h1,#overlay>div h2,#overlay>div p,#overlay>div div,#overlay>div span{max-width:88vw!important;white-space:normal!important;word-wrap:break-word!important}' +
+    '}';
+  document.head.appendChild(stl);
+})();
+const _sm166 = window.showModal;
+window.showModal = function (html, opts) {
+  const isVoice = /голос улиц/i.test(html || '');
+  function rulesOn166() {
+    const r = document.getElementById('rulesScreen');
+    if (!r) return false;
+    const cs = getComputedStyle(r);
+    return cs.display !== 'none' && cs.visibility !== 'hidden' && parseFloat(cs.opacity) > 0;
+  }
+  if (isVoice && rulesOn166()) {
+    return new Promise(res => {
+      const t = setInterval(() => {
+        if (!rulesOn166()) { clearInterval(t); _sm166(html, opts).then(res); }
+      }, 700);
+    });
+  }
+  return _sm166(html, opts);
+};
