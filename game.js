@@ -5555,3 +5555,46 @@ function qrState138() {
     '}';
   document.head.appendChild(stl);
 })();
+// ============================================
+// ДОПОЛНЕНИЕ v164 — АДАПТАЦИЯ ТОЧНАЯ: КОЛОНКА НА УЗКИХ, ПОЛЕ В СВОЕЙ ЯЧЕЙКЕ НА ТВ
+// ============================================
+(function () {
+  const stl = document.createElement('style');
+  stl.textContent =
+    '@media (max-width:900px){' +
+    'html,body{overflow:auto!important;height:auto!important}' +
+    '#gameScreen{display:flex!important;flex-direction:column!important;height:auto!important;overflow:visible!important;position:static!important}' +
+    '.game-header{position:static!important;flex-wrap:wrap!important;height:auto!important;padding:6px!important}' +
+    '.game-main{display:flex!important;flex-direction:column!important;height:auto!important;overflow:visible!important;grid-template-columns:none!important}' +
+    '#boardWrapper{width:100%!important;height:auto!important;overflow-x:auto!important}' +
+    '.side-panel,.right-panel{width:100%!important;position:static!important;max-height:none!important;overflow:visible!important}' +
+    '.bottom-panel{position:static!important}' +
+    '.action-buttons{display:grid!important;grid-template-columns:1fr 1fr!important}' +
+    '#overlay>div,.modal{width:92vw!important;max-width:92vw!important;max-height:84vh!important;overflow:auto!important}' +
+    '}' +
+    '@media (max-width:480px){.header-right input[type=range]{width:70px!important}.hbtn{padding:4px 6px!important;font-size:14px!important}.header-left h2{font-size:13px!important}}';
+  document.head.appendChild(stl);
+  function fit164() {
+    const b = document.getElementById('board');
+    const wrap = document.getElementById('boardWrapper');
+    if (!b || !wrap) return;
+    b.style.zoom = 1;
+    const bw = b.offsetWidth || 1000, bh = b.offsetHeight || 1000;
+    const aw = (wrap.clientWidth || window.innerWidth) - 8;
+    const narrow = window.innerWidth < 1100;
+    const ah = narrow ? Infinity : Math.max(400, window.innerHeight - 170);
+    const k = Math.max(.25, Math.min(aw / bw, ah / bh, 1.6));
+    b.style.zoom = k;
+  }
+  window.fitBoard164 = fit164;
+  window.tvRescue155 = function () {
+    const b = document.getElementById('board');
+    if (!b) return;
+    let el = b;
+    for (let i = 0; i < 4 && el; i++) { el.style.transform = 'none'; el = el.parentElement; }
+    fit164();
+  };
+  window.addEventListener('resize', fit164);
+  setInterval(fit164, 2500);
+  setTimeout(fit164, 1500); setTimeout(fit164, 4000);
+})();
