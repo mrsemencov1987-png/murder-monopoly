@@ -165,6 +165,9 @@ function handle(d) {
   }
   if (d.type === 'modal') {
     var box = document.getElementById('mmodal');
+    var sig182 = (d.title || '') + '|' + (d.buttons || []).join('|');
+    if (box.style.display === 'block' && box.getAttribute('data-sig') === sig182) return;
+    box.setAttribute('data-sig', sig182);
     box.style.display = 'block';
     document.getElementById('mm-title').textContent = '🖥 ' + d.title;
     var row = document.getElementById('mm-btns');
