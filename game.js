@@ -6005,3 +6005,39 @@ async function qrSeq111(oldHtml) {
   }
   return showPlate178('<h2 style="color:#d4af37">✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p>Город просыпается…</p><button data-val="start" ' + btnStyle + '>🎲 Начать!</button>');
 }
+// ============================================
+// ДОПОЛНЕНИЕ v179 — ГОЛОС УЛИЦ: ПРОПУСК С ТЕЛЕФОНА + АВТО; NTFY-ФЬЮЗ
+// ============================================
+// 1) Фьюз: после первой 429 ntfy больше не дёргаем
+let ntfyDead179 = false;
+const _np179 = ntfyPub172;
+window.ntfyPub172 = function (t, s) {
+  if (ntfyDead179) return;
+  fetch(MM_NTFY + '/' + t, { method: 'POST', body: s }).then(r => {
+    if (r.status === 429) { ntfyDead179 = true; console.log('🔇 ntfy устал — дальше только mqtt'); }
+  }).catch(() => {});
+};
+// 2) Голос улиц: зеркало на телефон + автопропуск через 6 сек
+(function () {
+  let cur179 = null;
+  setInterval(() => {
+    const btn = [...document.querySelectorAll('button')].find(b => /услышал/i.test(b.textContent || '') && b.offsetParent !== null);
+    if (btn && btn !== cur179) {
+      cur179 = btn;
+      qrBroadcast138({ type: 'modal', title: '🌆 Голос улиц', buttons: ['👂 Я услышал'] });
+      setTimeout(() => { if (cur179 && cur179.offsetParent !== null) cur179.click(); cur179 = null; }, 6000);
+    }
+    if (!btn) cur179 = null;
+  }, 800);
+})();
+// 3) Кнопка с телефона бьёт по «услышал», если оверлей пуст
+const _pc179 = phoneCmd141;
+window.phoneCmd141 = function (d, conn) {
+  if (d && d.cmd === 'modal') {
+    const ov = document.getElementById('overlay');
+    const ovOn = ov && ov.style.display !== 'none' && ov.innerHTML.trim();
+    const vb = [...document.querySelectorAll('button')].find(b => /услышал/i.test(b.textContent || '') && b.offsetParent !== null);
+    if (vb && !ovOn) { vb.click(); return; }
+  }
+  return _pc179(d, conn);
+};
