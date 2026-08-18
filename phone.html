@@ -82,6 +82,7 @@ var st = document.getElementById('status');
 var rdata = (location.hash.match(/r=([^&]+)/) || [])[1];
 var room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
 var myName = null, cli = null, selKey = null;
+var esAll = null, esMe = null, lastMsg = Date.now();
 function send(d) { if (cli && room) cli.publish('mm145_' + room + '_up', JSON.stringify({ name: myName, d: d })); }
 function showRole(d) {
   myName = d.n;
@@ -98,7 +99,11 @@ function clearSel() {
   document.getElementById('card-cancel').style.display = 'none';
   [...document.getElementById('hand-row').children].forEach(function (x) { x.classList.remove('sel'); });
 }
-function onMsg(e) { try { var o = JSON.parse(e.data); handle(JSON.parse(o.message)); } catch (err) {} }
+function onMsg(e) {
+  lastMsg = Date.now();
+  if (st.textContent.indexOf('переподключение') !== -1) st.textContent = '🔗 На связи с городом: пульт активен.';
+  try { var o = JSON.parse(e.data); handle(JSON.parse(o.message)); } catch (err) {}
+}
 function handle(d) {
   if (d.type === 'role') showRole({ n: d.name, r: d.role, c: d.color });
   if (d.type === 'state') {
@@ -179,12 +184,25 @@ if (rdata) {
 }
 if (room) {
   cli = { publish: function (t, s) { fetch(MM_NTFY + '/' + t, { method: 'POST', body: s }); } };
-  var esAll = new EventSource(MM_NTFY + '/mm145_' + room + '_down_all/sse');
-  esAll.onmessage = onMsg;
-  esAll.onerror = function () { st.textContent = '📡 переподключение…'; };
-  if (myName) { var esMe = new EventSource(MM_NTFY + '/mm145_' + room + '_down_' + myName + '/sse'); esMe.onmessage = onMsg; }
+  function openAll() {
+    try { if (esAll) esAll.close(); } catch (e) {}
+    esAll = new EventSource(MM_NTFY + '/mm145_' + room + '_down_all/sse');
+    esAll.onmessage = onMsg;
+    esAll.onerror = function () { st.textContent = '📡 переподключение…'; };
+  }
+  function openMe() {
+    if (!myName) return;
+    try { if (esMe) esMe.close(); } catch (e) {}
+    esMe = new EventSource(MM_NTFY + '/mm145_' + room + '_down_' + myName + '/sse');
+    esMe.onmessage = onMsg;
+  }
+  openAll(); openMe();
   cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName }));
   st.textContent = '🔗 На связи с городом: пульт активен.';
+  setInterval(function () { cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName })); }, 6000);
+  setInterval(function () {
+    if (Date.now() - lastMsg > 12000) { st.textContent = '📡 переподключение…'; openAll(); openMe(); lastMsg = Date.now(); }
+  }, 5000);
 } else if (!rdata) {
   st.textContent = '❌ Нет данных — отсканируй QR заново.';
 }
