@@ -5598,3 +5598,28 @@ function qrState138() {
   setInterval(fit164, 2500);
   setTimeout(fit164, 1500); setTimeout(fit164, 4000);
 })();
+// ============================================
+// ДОПОЛНЕНИЕ v165 — КЛИК ПО КУБИКУ = БРОСОК
+// ============================================
+(function () {
+  let bound165 = false;
+  setInterval(() => {
+    const d = document.getElementById('diceDisplay') || document.getElementById('diceCube');
+    if (!d || bound165) return;
+    bound165 = true;
+    const zone = d.closest('.panel') || d;
+    zone.style.cursor = 'pointer';
+    zone.title = '🎲 Нажми на кубик — бросок!';
+    zone.addEventListener('click', () => {
+      if (!S || S.isBusy || S.isOver) return;
+      const p = S.players[S.cur];
+      if (!p || p.isBot || p.jail > 0) return;
+      const b = document.getElementById('rollBtn');
+      if (b && b.disabled) return;
+      if (window.roll) roll(); else if (window.rollDice) rollDice();
+    });
+    const stl = document.createElement('style');
+    stl.textContent = '#diceDisplay:hover,#diceCube:hover{transform:scale(1.06);filter:drop-shadow(0 0 14px rgba(212,175,55,.7));transition:.15s}';
+    document.head.appendChild(stl);
+  }, 1000);
+})();
