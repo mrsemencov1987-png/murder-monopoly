@@ -6178,3 +6178,11 @@ async function mmStartPc145() {
   return room;
 }
 window.ntfyPub172 = function () {}; // ntfy больше не публикуем — лимиты и reset'ы не наши проблемы
+// ============================================
+// ДОПОЛНЕНИЕ v185 — ПУЛЬС КАЖДЫЕ 3 СЕК: ТЕЛЕФОН НЕ ПАНИКУЕТ В ТИШИНЕ
+// ============================================
+setInterval(() => {
+  try {
+    if (mmBus145 && Object.keys(mmBus145.joined).length && typeof qrState138 === 'function') qrState138();
+  } catch (e) {}
+}, 3000);
