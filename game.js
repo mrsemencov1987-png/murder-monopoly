@@ -6115,3 +6115,46 @@ setInterval(() => {
     }
   } else window._mirror182 = null;
 }, 1200);
+// ============================================
+// ДОПОЛНЕНИЕ v183 — БЫСТРЫЕ CDN (6 СЕК), ШКАЛА ЗАГРУЗКИ, БЕЗ МЁРТВОГО PEERJS
+// ============================================
+function loadBar183(text, done) {
+  let el = document.getElementById('loadbar183');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loadbar183';
+    el.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:999;background:#141a35;border:2px solid #d4af37;color:#ffd54f;padding:8px 16px;border-radius:12px;font-weight:700;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.6)';
+    document.body.appendChild(el);
+  }
+  el.textContent = text;
+  el.style.display = done ? 'none' : 'block';
+}
+function loadScript183(url, ms) {
+  return new Promise(res => {
+    const s = document.createElement('script');
+    const t = setTimeout(() => { s.onload = s.onerror = null; res(false); }, ms || 6000);
+    s.onload = () => { clearTimeout(t); res(true); };
+    s.onerror = () => { clearTimeout(t); res(false); };
+    s.src = url;
+    document.head.appendChild(s);
+  });
+}
+async function loadMqtt171() {
+  if (window.mqtt) return;
+  const urls = ['https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js', 'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js', 'https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js'];
+  for (let i = 0; i < urls.length; i++) {
+    loadBar183('📡 Связь: mqtt ' + (i + 1) + '/' + urls.length + '…');
+    if (await loadScript183(urls[i])) break;
+  }
+  loadBar183('', true);
+}
+async function loadQRious137() {
+  if (window.QRious) return;
+  const urls = ['https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js', 'https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js', 'https://unpkg.com/qrious@4.0.2/dist/qrious.min.js'];
+  for (let i = 0; i < urls.length; i++) {
+    loadBar183('🔳 QR: генератор ' + (i + 1) + '/' + urls.length + '…');
+    if (await loadScript183(urls[i])) break;
+  }
+  loadBar183('', true);
+}
+window.showQRScreen = async function () { return qrSeq111(''); };
