@@ -188,8 +188,7 @@ if (room) {
     try { if (esAll) esAll.close(); } catch (e) {}
     esAll = new EventSource(MM_NTFY + '/mm145_' + room + '_down_all/sse');
     esAll.onmessage = onMsg;
-    esAll.onerror = function () { st.textContent = '📡 переподключение…'; };
-  }
+      }
   function openMe() {
     if (!myName) return;
     try { if (esMe) esMe.close(); } catch (e) {}
