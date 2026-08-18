@@ -5521,3 +5521,37 @@ function qrState138() {
     }
   } catch (e) {}
 }
+// ============================================
+// ДОПОЛНЕНИЕ v163 — АДАПТАЦИЯ-МАКСИМУМ: СМАРТФОН/ПЛАНШЕТ/ТВ/ПЛАНШЕТ-АЛЬБОМ
+// ============================================
+(function () {
+  const stl = document.createElement('style');
+  stl.textContent =
+    '@media (max-width:1200px){.game-main{gap:8px!important}.right-panel{width:260px!important}}' +
+    '@media (max-width:900px){' +
+    'html,body{overflow:auto!important;height:auto!important}' +
+    '#gameScreen{display:flex!important;flex-direction:column!important;height:auto!important;overflow:visible!important}' +
+    '.game-header{position:static!important;flex-wrap:wrap!important;height:auto!important;padding:6px!important;gap:6px}' +
+    '.header-left h2{font-size:16px!important}' +
+    '.header-center{order:3;width:100%!important;display:flex!important;flex-direction:row!important;gap:10px;justify-content:center;flex-wrap:wrap}' +
+    '.header-right{order:2;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}' +
+    '.game-main{flex-direction:column!important;overflow:visible!important;height:auto!important}' +
+    '#boardWrapper{width:100%!important;overflow-x:auto!important}' +
+    '.side-panel{width:100%!important;position:static!important;max-height:none!important;overflow:visible!important}' +
+    '.right-panel{width:100%!important;position:static!important;max-height:none!important;overflow:visible!important}' +
+    '.bottom-panel{position:static!important}' +
+    '.action-buttons{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px}' +
+    '#overlay{overflow:auto!important;padding:10px 0!important}' +
+    '#overlay>div,.modal{width:92vw!important;max-width:92vw!important;max-height:84vh!important;overflow:auto!important}' +
+    '#mobileCardView .card-container{width:92vw!important}' +
+    '}' +
+    '@media (max-width:480px){' +
+    '.header-right input[type=range]{width:70px!important}' +
+    '.hbtn{padding:4px 6px!important;font-size:14px!important}' +
+    '.header-left h2{font-size:13px!important}' +
+    '}' +
+    '@media (max-height:520px) and (orientation:landscape){' +
+    '.game-header{padding:2px!important}.header-center{display:none!important}' +
+    '}';
+  document.head.appendChild(stl);
+})();
