@@ -5276,3 +5276,92 @@ window.showModal = function (html, opts) {
   window.addEventListener('resize', adapt158);
   setTimeout(adapt158, 1200); setTimeout(adapt158, 3000);
 })();
+// ============================================
+// ДОПОЛНЕНИЕ v159 — ШАПКА, ПРЕВЬЮ КАРТ, ВИДЕО-АВТОЗАПУСК, СВОЁ МЕДИА
+// ============================================
+// 1) Зум + ТВ — в шапку, в строку с лого
+(function () {
+  const h1 = document.querySelector('h1') || document.querySelector('.logo');
+  if (!h1) return;
+  const header = h1.closest('header') || h1.parentElement;
+  const min = document.getElementById('zmin151');
+  const bar = min ? min.parentElement : null;
+  const tv = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === '📺' && b.style.position === 'fixed');
+  if (bar) {
+    bar.style.position = 'static'; bar.style.display = 'inline-flex'; bar.style.marginLeft = '8px'; bar.style.verticalAlign = 'middle'; bar.style.gap = '6px';
+    if (tv) { tv.style.position = 'static'; bar.appendChild(tv); }
+    header.insertBefore(bar, h1.nextSibling);
+  }
+})();
+// 2) Превью карты на мониторе + применение вторым тапом
+function phoneCmd141(d, conn) {
+  if (!S || !d || !d.cmd) return;
+  if (d.cmd === 'modal') { mmModalClick152(d.i | 0); return; }
+  if (d.cmd === 'preview') {
+    document.querySelectorAll('.mm-preview159').forEach(el => el.classList.remove('mm-preview159'));
+    if (d.key) {
+      const el = document.querySelector('[data-key="' + d.key + '"]');
+      if (el) { el.classList.add('mm-preview159'); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+    }
+    return;
+  }
+  const cur = S.players[S.cur];
+  if (!cur || cur.isBot || cur.name !== conn._mmName) return;
+  if (d.cmd === 'roll') { const b = document.getElementById('rollBtn'); if (b && !b.disabled && !S.isBusy) rollDice(); }
+  if (d.cmd === 'end') { const b = document.getElementById('endBtn'); if (b && !b.disabled) endTurn(); }
+  if (d.cmd === 'play') {
+    document.querySelectorAll('.mm-preview159').forEach(el => el.classList.remove('mm-preview159'));
+    const el = document.querySelector('[data-key="' + d.key + '"]'); if (el) el.click();
+  }
+}
+const stl159 = document.createElement('style');
+stl159.textContent = '.mm-preview159{outline:3px solid #7cfc9a!important;outline-offset:2px;border-radius:8px;box-shadow:0 0 24px rgba(124,252,154,.8)!important}';
+document.head.appendChild(stl159);
+// 3) Рука с описаниями для телефона
+function handFromDom158() {
+  const seen = {}, cards = [];
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.getAttribute('data-key');
+    if (!key || seen[key]) return;
+    if (!el.closest('.hand, .hand-panel, [class*="hand"], #hand')) return;
+    seen[key] = 1;
+    const c = (window.CHIPS && CHIPS[key]) || (window.SKINS && SKINS[key]) || {};
+    const cardEl = el.closest('[class*="card"], .hcard');
+    cards.push({ key: key, name: c.name || key, desc: c.desc || c.text || (cardEl ? cardEl.textContent.trim().slice(0, 140) : '') });
+  });
+  return cards;
+}
+// 4) Видео: автозапуск везде (ТВ тоже), muted+loop+playsinline
+(function () {
+  function fixVids159() {
+    document.querySelectorAll('video').forEach(v => {
+      v.muted = true; v.defaultMuted = true; v.loop = true;
+      v.setAttribute('playsinline', ''); v.setAttribute('autoplay', '');
+      const p = v.play(); if (p && p.catch) p.catch(() => {});
+    });
+  }
+  fixVids159(); setTimeout(fixVids159, 1500); setTimeout(fixVids159, 4000);
+  window.addEventListener('click', fixVids159); window.addEventListener('keydown', fixVids159);
+})();
+// 5) Кнопка 🎬 — подменить медиа на своё (только ПК)
+(function () {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'video/*,audio/*'; inp.style.display = 'none';
+  document.body.appendChild(inp);
+  let target159 = null;
+  inp.onchange = () => { const f = inp.files[0]; if (f && target159) { target159.src = URL.createObjectURL(f); target159.play().catch(() => {}); } };
+  const btn = document.createElement('button');
+  btn.textContent = '🎬';
+  btn.title = 'Своё медиа';
+  btn.style.cssText = 'width:38px;height:38px;border-radius:10px;border:2px solid #d4af37;background:#101632;color:#ffd54f;font-size:18px;font-weight:900;cursor:pointer';
+  btn.onclick = async () => {
+    const ch = await showModal('<h2>🎬 Своё медиа</h2><p>Какой элемент заменить вашим файлом?</p><button data-v="bg">🌆 Фон игры (bg)</button><button data-v="rules">📜 Фон правил</button><button data-v="center">🎯 Центр поля</button>');
+    target159 = ch === 'bg' ? document.querySelector('video#bgVideo, video.bg, body > video, #bg video') :
+      ch === 'rules' ? document.querySelector('video#rulesBg, video.rules, #rules video, .rules video') :
+      document.querySelector('#board video, .board video, .center video, #center video');
+    if (target159) inp.click();
+    else console.log('🎬 Элемент не найден — скажи мне его id');
+  };
+  const min = document.getElementById('zmin151');
+  if (min) min.parentElement.appendChild(btn);
+})();
