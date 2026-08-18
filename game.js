@@ -5426,3 +5426,35 @@ window.showModal = function (html, opts) {
   window.addEventListener('resize', adapt160);
   setTimeout(adapt160, 1200); setTimeout(adapt160, 3000); setTimeout(adapt160, 6000);
 })();
+// ============================================
+// ДОПОЛНЕНИЕ v161 — ПОЛЕ НЕ НАЕЗЖАЕТ НА ПАНЕЛИ, QR КОМФОРТНОГО РАЗМЕРА
+// ============================================
+// 1) ТВ-спасатель меряет честно: минус боковые панели, потолок 1.25
+window.tvRescue155 = function () {
+  const b = document.getElementById('board') || document.querySelector('.board');
+  if (!b) return;
+  let el = b;
+  for (let i = 0; i < 4 && el; i++) { el.style.transform = 'none'; el = el.parentElement; }
+  b.style.width = '1000px'; b.style.height = '1000px'; b.style.minWidth = '1000px'; b.style.flex = 'none';
+  const aw = Math.max(500, window.innerWidth - 780);
+  const ah = Math.max(400, window.innerHeight - 150);
+  const k = Math.max(.3, Math.min(aw / 1000, ah / 1000, 1.25));
+  b.style.zoom = k;
+};
+// и автоподгон при загрузке/ресайзе — по тому же правилу
+(function () {
+  function fit161() {
+    const w = window.innerWidth;
+    const b = document.getElementById('board');
+    if (!b) return;
+    if (w >= 1100) { window.tvRescue155(); }
+  }
+  window.addEventListener('resize', fit161);
+  setTimeout(fit161, 2600); setTimeout(fit161, 5000);
+})();
+// 2) QR поменьше — удобно сканировать с любого расстояния
+(function () {
+  const stl = document.createElement('style');
+  stl.textContent = '#overlay div[style*="background:#fff"] img{width:min(300px,62vw)!important;height:auto!important}';
+  document.head.appendChild(stl);
+})();
