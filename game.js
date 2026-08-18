@@ -5201,3 +5201,78 @@ async function mmStartPc145() {
 function mmSend145(name, obj) { if (mmBus145) mmBus145.client.publish('mm145_' + mmBus145.room + '_down_' + name, JSON.stringify(obj)); }
 function qrBroadcast138(msg) { if (mmBus145) mmBus145.client.publish('mm145_' + mmBus145.room + '_down_all', JSON.stringify(msg)); }
 function qrAnyOpen138() { return !!(mmBus145 && Object.keys(mmBus145.joined).length); }
+// ============================================
+// ДОПОЛНЕНИЕ v158 — РУКА ИЗ DOM, ГОЛОС-АВТОЗАТЫЧКА, ЗУМ К ЛОГО, АДАПТАЦИЯ
+// ============================================
+// 1) Рука читается из DOM — работает при любом имени свойства
+function handFromDom158() {
+  const seen = {}, cards = [];
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const key = el.getAttribute('data-key');
+    if (!key || seen[key]) return;
+    if (!el.closest('.hand, .hand-panel, [class*="hand"], #hand')) return;
+    seen[key] = 1;
+    const nm = (window.CHIPS && CHIPS[key] && CHIPS[key].name) || (window.SKINS && SKINS[key] && SKINS[key].name) || key;
+    cards.push({ key: key, name: nm });
+  });
+  return cards;
+}
+function qrState138() {
+  try {
+    if (!S || !mmBus145 || !Object.keys(mmBus145.joined).length) return;
+    const now = Date.now();
+    if (now - (window._mm148t || 0) < 800) return;
+    window._mm148t = now;
+    const cur = S.players[S.cur] || {};
+    const logEl = document.querySelector('#log div, .log div, .log-line, .chronicle div');
+    qrBroadcast138({
+      type: 'state', round: S.round || S.turnCount || 1, turn: cur.name || '',
+      lastLog: logEl ? logEl.textContent.trim() : '',
+      players: S.players.map(p => ({
+        name: p.name, coins: num150(p.coins != null ? p.coins : p.money),
+        suspect: num150(p.suspect), fatigue: num150(p.fatigue), fear: num150(p.fear), tokens: num150(p.tokens)
+      }))
+    });
+    if (cur && !cur.isBot && mmBus145.joined[cur.name]) {
+      mmSend145(cur.name, { type: 'hand', cards: handFromDom158() });
+    }
+  } catch (e) {}
+}
+// 2) «Голос улиц»: окно само гаснет через 9 сек, если никто не нажал
+const _sm158 = window.showModal;
+window.showModal = function (html, opts) {
+  const pr = _sm158(html, opts);
+  if (/услышал/i.test(html || '')) {
+    setTimeout(() => {
+      const btn = [...document.querySelectorAll('.modal button, #modal button, [class*="modal"] button')].find(b => /услышал/i.test(b.textContent));
+      if (btn) btn.click();
+    }, 9000);
+  }
+  return pr;
+};
+// 3) Зум-кнопки — к лого, а не поверх него
+(function () {
+  const min = document.getElementById('zmin151');
+  const bar = min ? min.parentElement : null;
+  const h1 = document.querySelector('h1') || document.querySelector('.logo');
+  if (bar && h1) {
+    bar.style.position = 'static';
+    bar.style.display = 'inline-flex';
+    bar.style.marginLeft = '10px';
+    bar.style.verticalAlign = 'middle';
+    h1.parentNode.insertBefore(bar, h1.nextSibling);
+  }
+})();
+// 4) Универсальная адаптация под узкие экраны (телефон в локальном режиме)
+(function () {
+  const stl = document.createElement('style');
+  stl.textContent = '@media (max-width:900px){body{overflow:auto!important}main,.main,#main,.layout,.wrap{flex-direction:column!important;height:auto!important;overflow:visible!important}[class*="panel"]{width:100%!important;max-width:100%!important}}';
+  document.head.appendChild(stl);
+  function adapt158() {
+    const w = window.innerWidth;
+    const b = document.getElementById('board') || document.querySelector('.board');
+    if (b && w < 1100) b.style.zoom = Math.max(.3, (w - 20) / 1050);
+  }
+  window.addEventListener('resize', adapt158);
+  setTimeout(adapt158, 1200); setTimeout(adapt158, 3000);
+})();
