@@ -6158,3 +6158,23 @@ async function loadQRious137() {
   loadBar183('', true);
 }
 window.showQRScreen = async function () { return qrSeq111(''); };
+// ============================================
+// ДОПОЛНЕНИЕ v184 — ТИШИНА: ТОЛЬКО ЖИВЫЕ БРОКЕРЫ, NTFY И MOSQUITTO НЕ ДЁРГАЕМ
+// ============================================
+async function mmStartPc145() {
+  await loadMqtt171();
+  const room = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
+  mmBus145 = { room: room, joined: {}, clients: [], ntfyLast: 0 };
+  ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt'].forEach(url => {
+    try {
+      if (!window.mqtt) return;
+      const c = mqtt.connect(url, { reconnectPeriod: 8000, connectTimeout: 6000 });
+      c.on('connect', () => { c.subscribe('mm145_' + room + '_up'); console.log('📡 ПК на брокере:', url); });
+      c.on('message', (t, buf) => onUp171(buf.toString()));
+      mmBus145.clients.push(c);
+    } catch (e) {}
+  });
+  console.log('🌐 Комната создана:', room, '(только mqtt)');
+  return room;
+}
+window.ntfyPub172 = function () {}; // ntfy больше не публикуем — лимиты и reset'ы не наши проблемы
