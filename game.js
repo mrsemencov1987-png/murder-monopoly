@@ -5850,3 +5850,35 @@ async function qrSeq111(oldHtml) {
   }
   return _sm111('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p>Город просыпается…</p><button data-val="start">🎲 Начать!</button>');
 }
+// ============================================
+// ДОПОЛНЕНИЕ v175 — QR НЕСЁТ И РОЛЬ, И АДРЕС КОМНАТЫ (ИСПРАВЛЕНЫ КНОПКИ)
+// ============================================
+async function qrSeq111(oldHtml) {
+  try { await loadQRious137(); } catch (e) {}
+  if (!mmBus145) { try { await mmStartPc145(); } catch (e) {} }
+  const base = location.href.split('#')[0].replace(/[^/]*$/, '') + 'phone.html';
+  const list = S.players.filter(p => !p.isBot);
+  const items = list.map(p => {
+    let src = '';
+    try {
+      const rolePart = btoa(unescape(encodeURIComponent(JSON.stringify({ n: p.name, r: p.role, c: p.color }))));
+      const url = base + '#room=' + mmBus145.room + '&r=' + rolePart;
+      src = new QRious({ value: url, size: 460, level: 'M' }).toDataURL();
+    } catch (e) {}
+    return { name: p.name, src: src };
+  }).filter(x => x.src);
+  
+  const sm = window.showModal; // используем актуальную версию
+  const btnStyle = 'style="padding:12px 24px;margin-top:12px;font-size:16px;font-weight:bold;cursor:pointer;background:#d4af37;color:#0a0e20;border:none;border-radius:8px;"';
+  
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    await sm('<h2>📱 ' + it.name + ' — отсканируй свою роль</h2>' +
+      '<p>Передай устройство игроку <b>' + it.name + '</b>. Остальные — не подглядывать!</p>' +
+      '<div style="background:#fff;padding:14px;border-radius:12px;display:inline-block;margin:10px 0"><img src="' + it.src + '" style="width:min(300px,62vw);display:block"></div>' +
+      '<div style="font-weight:bold;font-size:18px;margin:8px 0">' + it.name + '</div>' +
+      '<p>Плашка ' + (i + 1) + ' из ' + items.length + ' · роль и пульт придут на телефон</p>' +
+      '<button data-val="ok" ' + btnStyle + '>✅ ' + it.name + ' отсканировал — дальше</button>');
+  }
+  return sm('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p>Город просыпается…</p><button data-val="start" ' + btnStyle + '>🎲 Начать!</button>');
+}
