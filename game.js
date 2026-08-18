@@ -5654,3 +5654,34 @@ window.showModal = function (html, opts) {
   }
   return _sm166(html, opts);
 };
+// ============================================
+// ДОПОЛНЕНИЕ v167 — ЖИВУЧИЙ КАНАЛ: АВТОПЕРЕПОДКЛЮЧЕНИЕ НА ПК
+// ============================================
+async function mmStartPc145() {
+  const room = ('MM' + Math.random().toString(36).replace(/[^a-z0-9]/gi, '') + 'X').slice(0, 10).toUpperCase();
+  mmBus145 = {
+    room: room, joined: {},
+    client: { publish: (t, s) => fetch(MM_NTFY + '/' + t, { method: 'POST', body: s, headers: { 'Content-Type': 'text/plain' } }) }
+  };
+  openES167();
+  console.log('🌐 Комната ntfy создана:', room);
+  return room;
+}
+function openES167() {
+  if (!mmBus145) return;
+  const es = new EventSource(MM_NTFY + '/mm145_' + mmBus145.room + '_up/sse');
+  window._mmES167 = es;
+  es.onmessage = e => {
+    try {
+      const outer = JSON.parse(e.data);
+      const m = JSON.parse(outer.message);
+      if (m.type === 'hello' && m.name) {
+        mmBus145.joined[m.name] = true;
+        const p = S && S.players.find(x => x.name === m.name);
+        if (p) mmSend145(m.name, { type: 'role', name: p.name, role: p.role, color: p.color });
+        console.log('📱 Телефон подключился:', m.name);
+      } else if (m.name && m.d) phoneCmd141(m.d, { _mmName: m.name });
+    } catch (err) {}
+  };
+  es.onerror = () => { if (es.readyState === 2) setTimeout(openES167, 3000); };
+}
