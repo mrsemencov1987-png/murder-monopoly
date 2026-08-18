@@ -5817,3 +5817,22 @@ function qrBroadcast138(msg) {
     ntfyPub172('mm145_' + mmBus145.room + '_down_all', s);
   }
 }
+// ============================================
+// ДОПОЛНЕНИЕ v173 — СТОРОЖ: ПРОИГРАВШИЙ ФИЗИЧЕСКИ НЕ ВИДИТ КНОПКУ МИРА
+// ============================================
+(function () {
+  function sweep173() {
+    const p = S && S.players[S.cur];
+    if (!p || p.isBot) return;
+    const sus = p.suspect ? (p.suspect.get ? p.suspect.get() : p.suspect) : 0;
+    if (sus < 10) return;
+    document.querySelectorAll('button').forEach(b => {
+      if (/разойтись миром/i.test(b.textContent || '')) {
+        b.style.display = 'none';
+        b.disabled = true;
+      }
+    });
+  }
+  new MutationObserver(sweep173).observe(document.body, { childList: true, subtree: true });
+  setInterval(sweep173, 700);
+})();
