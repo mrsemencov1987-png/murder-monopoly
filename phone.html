@@ -26,6 +26,8 @@
   #hand{display:none;margin-top:12px}
   #hand-row{display:flex;gap:6px;overflow-x:auto;padding:6px 2px;scroll-snap-type:x mandatory}
   #hand-row div{min-width:96px;scroll-snap-align:start;background:rgba(255,255,255,.07);border:1px solid rgba(212,175,55,.4);border-radius:10px;padding:8px;font-size:12px;text-align:center;cursor:pointer}
+  #hand-row div.sel{border-color:#7cfc9a;box-shadow:0 0 12px rgba(124,252,154,.6)}
+  #card-info{display:none;margin-top:6px;background:rgba(124,252,154,.08);border:1px solid rgba(124,252,154,.4);border-radius:10px;padding:8px;font-size:12px;text-align:center}
 </style>
 </head>
 <body>
@@ -50,8 +52,9 @@
     <div id="mm-btns"></div>
   </div>
   <div id="hand">
-    <div style="font-size:11px;color:#8a93af;text-align:center">🃏 Твои карты: свайп → , тап = сыграть</div>
+    <div style="font-size:11px;color:#8a93af;text-align:center">🃏 Тап = показать на мониторе · второй тап = сыграть · свайп = отмена</div>
     <div id="hand-row"></div>
+    <div id="card-info"></div>
   </div>
   <div id="remote">
     <button id="btn-roll" disabled>🎲 Кубик</button>
@@ -65,7 +68,7 @@ var ROLN = { sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civilian
 var st = document.getElementById('status');
 var rdata = (location.hash.match(/r=([^&]+)/) || [])[1];
 var room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
-var myName = null, cli = null;
+var myName = null, cli = null, selKey = null;
 function send(d) { if (cli && room) cli.publish('mm145_' + room + '_up', JSON.stringify({ name: myName, d: d })); }
 function showRole(d) {
   myName = d.n;
@@ -117,12 +120,29 @@ function handle(d) {
     d.cards.forEach(function (c) {
       var el = document.createElement('div');
       el.textContent = c.name;
-      el.onclick = function () { send({ cmd: 'play', key: c.key }); };
+      el.onclick = function () {
+        if (selKey === c.key) { send({ cmd: 'play', key: c.key }); selKey = null; document.getElementById('card-info').style.display = 'none'; }
+        else {
+          selKey = c.key;
+          send({ cmd: 'preview', key: c.key });
+          var info = document.getElementById('card-info');
+          info.style.display = 'block';
+          info.innerHTML = '<b>' + c.name + '</b>' + (c.desc ? '<br>' + c.desc : '') + '<br><i>второй тап = сыграть</i>';
+        }
+        [...wrap.children].forEach(function (x) { x.classList.toggle('sel', x === el && selKey); });
+      };
       wrap.appendChild(el);
     });
   }
   if (d.type === 'text') { var ev2 = document.getElementById('event'); ev2.style.display = 'block'; ev2.textContent = d.text; }
 }
+var swipeT = null;
+document.getElementById('hand-row').addEventListener('scroll', function () {
+  clearTimeout(swipeT);
+  swipeT = setTimeout(function () {
+    if (selKey) { selKey = null; send({ cmd: 'preview', key: null }); document.getElementById('card-info').style.display = 'none'; }
+  }, 250);
+});
 document.getElementById('btn-roll').onclick = function () { send({ cmd: 'roll' }); };
 document.getElementById('btn-end').onclick = function () { send({ cmd: 'end' }); };
 if (rdata) {
