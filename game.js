@@ -5930,3 +5930,37 @@ async function qrSeq111(oldHtml) {
   }
   return sm('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p>Город просыпается…</p><button data-val="start" ' + btnStyle + '>🎲 Начать!</button>');
 }
+// ============================================
+// ДОПОЛНЕНИЕ v177 — ПЛАШКИ-ТЕРМИНАТОР: QR ЛЮБОЙ ЦЕНОЙ + ССЫЛКА ТЕКСТОМ
+// ============================================
+async function qrSeq111(oldHtml) {
+  try { await loadQRious137(); } catch (e) {}
+  if (!mmBus145) { try { await mmStartPc145(); } catch (e) {} }
+  const base = location.href.split('#')[0].replace(/[^/]*$/, '') + 'phone.html';
+  const list = S.players.filter(p => !p.isBot);
+  const items = list.map(p => {
+    const rolePart = btoa(unescape(encodeURIComponent(JSON.stringify({ n: p.name, r: p.role, c: p.color }))));
+    const url = base + '#room=' + (mmBus145.room + '&r=' + rolePart);
+    let dataSrc = '';
+    if (window.QRious) { try { dataSrc = new QRious({ value: url, size: 460, level: 'M' }).toDataURL(); } catch (e) {} }
+    const netSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=430x430&data=' + encodeURIComponent(url);
+    console.log('🔳 QR для', p.name, '→', dataSrc ? 'локальный (' + dataSrc.length + ' симв.)' : 'внешний');
+    return { name: p.name, src: dataSrc || netSrc, net: netSrc, url: url };
+  });
+  const sm = window.showModal;
+  const btnStyle = 'style="padding:12px 24px;margin-top:12px;font-size:16px;font-weight:bold;cursor:pointer;background:#d4af37;color:#0a0e20;border:none;border-radius:8px;"';
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    console.log('🪧 Открываю плашку', i + 1, 'для', it.name);
+    await sm('<h2>📱 ' + it.name + ' — отсканируй свою роль</h2>' +
+      '<p>Передай устройство игроку <b>' + it.name + '</b>. Остальные — не подглядывать!</p>' +
+      '<div style="background:#fff;padding:14px;border-radius:12px;display:inline-block;margin:10px 0">' +
+      '<img src="' + it.src + '" onerror="this.onerror=null;this.src=\'' + it.net + '\';" style="width:min(300px,62vw);display:block">' +
+      '</div>' +
+      '<div style="font-weight:bold;font-size:18px;margin:8px 0">' + it.name + '</div>' +
+      '<p style="font-size:11px;opacity:.7;word-break:break-all">если QR не сканируется — открой на телефоне вручную: ' + it.url + '</p>' +
+      '<p>Плашка ' + (i + 1) + ' из ' + items.length + '</p>' +
+      '<button data-val="ok" ' + btnStyle + '>✅ ' + it.name + ' отсканировал — дальше</button>');
+  }
+  return sm('<h2>✅ Все получили роли</h2><p>🤖 Боты получили роли автоматически.</p><p>Город просыпается…</p><button data-val="start" ' + btnStyle + '>🎲 Начать!</button>');
+}
