@@ -91,6 +91,7 @@ function showRole(d) {
   r.style.display = 'block'; r.style.color = d.c || '#ffd54f';
   r.textContent = ROLN[d.r] || d.r;
   var w = document.getElementById('who'); w.style.display = 'block'; w.textContent = 'Ты играешь за: ' + d.n;
+  openMe();
 }
 function clearSel() {
   selKey = null;
@@ -101,7 +102,6 @@ function clearSel() {
 }
 function onMsg(e) {
   lastMsg = Date.now();
-  if (st.textContent.indexOf('переподключение') !== -1) st.textContent = '🔗 На связи с городом: пульт активен.';
   try { var o = JSON.parse(e.data); handle(JSON.parse(o.message)); } catch (err) {}
 }
 function handle(d) {
@@ -188,28 +188,27 @@ if (room) {
     try { if (esAll) esAll.close(); } catch (e) {}
     esAll = new EventSource(MM_NTFY + '/mm145_' + room + '_down_all/sse');
     esAll.onmessage = onMsg;
-      }
+    esAll.onerror = function () {};
+  }
   function openMe() {
     if (!myName) return;
     try { if (esMe) esMe.close(); } catch (e) {}
     esMe = new EventSource(MM_NTFY + '/mm145_' + room + '_down_' + myName + '/sse');
     esMe.onmessage = onMsg;
+    esMe.onerror = function () {};
   }
-  openAll(); openMe();
+  openAll();
   cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName }));
   st.textContent = '🔗 На связи с городом: пульт активен.';
- setInterval(function () { 
-  cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName })); 
-}, 15000); // было 6000 — реже, чтобы не перегружать
-
-setInterval(function () {
-  if (Date.now() - lastMsg > 30000) { // было 12000 — теперь 30 сек
-    st.textContent = '📡 связь восстановлена…'; // менее пугающе
-    openAll(); openMe(); 
-    lastMsg = Date.now();
-    if (myName) cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName }));
-  }
-}, 8000); // проверка реже
+  setInterval(function () { cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName })); }, 15000);
+  setInterval(function () {
+    if (Date.now() - lastMsg > 30000) {
+      st.textContent = '📡 восстанавливаю связь…';
+      openAll(); openMe();
+      lastMsg = Date.now();
+      cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName }));
+    }
+  }, 8000);
 } else if (!rdata) {
   st.textContent = '❌ Нет данных — отсканируй QR заново.';
 }
