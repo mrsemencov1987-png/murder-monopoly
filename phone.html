@@ -76,7 +76,9 @@
 </div>
 <script>
 window.onerror = function (m) { document.getElementById('status').textContent = '❌ JS: ' + m; };
+var MM_NTFY = 'https://ntfy.sh';
 var MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt', 'wss://test.mosquitto.org:8081'];
+var MQTT_CDNS = ['https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js', 'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js', 'https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js'];
 var ROLN = { sheriff: '🚔 ШЕРИФ', murderer: '🔪 УБИЙЦА', civilian: '🕊 МИРНЫЙ', cop: '🦹 ПРОДАЖНЫЙ КОП' };
 var st = document.getElementById('status');
 var rdata = (location.hash.match(/r=([^&]+)/) || [])[1];
@@ -85,19 +87,27 @@ var myName = null, selKey = null;
 var clients = [], seen = {}, lastMsg = Date.now();
 function loadMqtt(cb) {
   if (window.mqtt) return cb();
-  var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js';
-  s.onload = cb;
-  s.onerror = function () { st.textContent = '❌ не загрузилась библиотека связи'; };
-  document.head.appendChild(s);
+  var i = 0;
+  var next = function () {
+    if (i >= MQTT_CDNS.length) return cb();
+    var s = document.createElement('script');
+    s.src = MQTT_CDNS[i++];
+    s.onload = cb;
+    s.onerror = next;
+    document.head.appendChild(s);
+  };
+  next();
 }
+function ntfyPub(t, s) { fetch(MM_NTFY + '/' + t, { method: 'POST', body: s }).catch(function () {}); }
 function send(d) {
   var s = JSON.stringify({ name: myName, d: d });
   clients.forEach(function (c) { if (c.connected) c.publish('mm145_' + room + '_up', s); });
+  ntfyPub('mm145_' + room + '_up', s);
 }
 function hello() {
   var s = JSON.stringify({ type: 'hello', name: myName });
   clients.forEach(function (c) { if (c.connected) c.publish('mm145_' + room + '_up', s); });
+  ntfyPub('mm145_' + room + '_up', s);
 }
 function showRole(d) {
   myName = d.n;
@@ -107,6 +117,7 @@ function showRole(d) {
   r.textContent = ROLN[d.r] || d.r;
   var w = document.getElementById('who'); w.style.display = 'block'; w.textContent = 'Ты играешь за: ' + d.n;
   clients.forEach(function (c) { if (c.connected) c.subscribe('mm145_' + room + '_down_' + myName); });
+  openNtfyMe();
 }
 function clearSel() {
   selKey = null;
@@ -115,10 +126,9 @@ function clearSel() {
   document.getElementById('card-cancel').style.display = 'none';
   [...document.getElementById('hand-row').children].forEach(function (x) { x.classList.remove('sel'); });
 }
-function onPayload(topic, payload) {
-  var key = topic + ':' + payload;
-  if (seen[key]) return;
-  seen[key] = 1;
+function onPayload(payload) {
+  if (seen[payload]) return;
+  seen[payload] = 1;
   lastMsg = Date.now();
   try { handle(JSON.parse(payload)); } catch (e) {}
 }
@@ -200,7 +210,22 @@ if (rdata) {
   try { showRole(JSON.parse(decodeURIComponent(escape(atob(rdata))))); }
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
 }
+var esAll = null, esMe = null;
+function openNtfyAll() {
+  try { if (esAll) esAll.close(); } catch (e) {}
+  esAll = new EventSource(MM_NTFY + '/mm145_' + room + '_down_all/sse');
+  esAll.onmessage = function (e) { try { var o = JSON.parse(e.data); onPayload(o.message); } catch (err) {} };
+  esAll.onerror = function () {};
+}
+function openNtfyMe() {
+  if (!myName) return;
+  try { if (esMe) esMe.close(); } catch (e) {}
+  esMe = new EventSource(MM_NTFY + '/mm145_' + room + '_down_' + myName + '/sse');
+  esMe.onmessage = function (e) { try { var o = JSON.parse(e.data); onPayload(o.message); } catch (err) {} };
+  esMe.onerror = function () {};
+}
 if (room) {
+  openNtfyAll();
   loadMqtt(function () {
     MM_BROKERS.forEach(function (url) {
       try {
@@ -211,12 +236,12 @@ if (room) {
           if (myName) c.subscribe('mm145_' + room + '_down_' + myName);
           hello();
         });
-        c.on('message', function (t, p) { onPayload(t, p.toString()); });
+        c.on('message', function (t, p) { onPayload(p.toString()); });
         clients.push(c);
       } catch (e) {}
     });
   });
-  st.textContent = ' подключаюсь к городу…';
+  st.textContent = '🔌 подключаюсь к городу…';
   setInterval(hello, 10000);
   setInterval(function () {
     if (Date.now() - lastMsg > 25000) { st.textContent = '📡 восстанавливаю связь…'; hello(); }
