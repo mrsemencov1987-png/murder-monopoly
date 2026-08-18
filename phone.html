@@ -199,10 +199,18 @@ if (room) {
   openAll(); openMe();
   cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName }));
   st.textContent = '🔗 На связи с городом: пульт активен.';
-  setInterval(function () { cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName })); }, 6000);
-  setInterval(function () {
-    if (Date.now() - lastMsg > 12000) { st.textContent = '📡 переподключение…'; openAll(); openMe(); lastMsg = Date.now(); }
-  }, 5000);
+ setInterval(function () { 
+  cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName })); 
+}, 15000); // было 6000 — реже, чтобы не перегружать
+
+setInterval(function () {
+  if (Date.now() - lastMsg > 30000) { // было 12000 — теперь 30 сек
+    st.textContent = '📡 связь восстановлена…'; // менее пугающе
+    openAll(); openMe(); 
+    lastMsg = Date.now();
+    if (myName) cli.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', name: myName }));
+  }
+}, 8000); // проверка реже
 } else if (!rdata) {
   st.textContent = '❌ Нет данных — отсканируй QR заново.';
 }
