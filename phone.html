@@ -129,7 +129,8 @@ function clearSel() {
 function onPayload(payload) {
   if (seen[payload]) return;
   seen[payload] = 1;
-  lastMsg = Date.now();
+  lastMsg = Date.now();  
+  if (st.textContent.indexOf('восстанавливаю') !== -1) st.textContent = '🔗 На связи с городом: пульт активен.';
   try { handle(JSON.parse(payload)); } catch (e) {}
 }
 function handle(d) {
