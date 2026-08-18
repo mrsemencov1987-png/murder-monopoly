@@ -5699,3 +5699,19 @@ es.onmessage = e => {
     } else if (m.name && m.d) phoneCmd141(m.d, { _mmName: m.name });
   } catch (err) {}
 };
+// ============================================
+// ДОПОЛНЕНИЕ v169 — ДУЭЛЬ: ПРОИГРАВШИЙ НЕ ВЫБИРАЕТ МИР
+// ============================================
+const _sm169 = window.showModal;
+window.showModal = function (html, opts) {
+  let h = html || '';
+  if (/разойтись миром/i.test(h)) {
+    const p = S && S.players[S.cur];
+    const sus = p && p.suspect ? (p.suspect.get ? p.suspect.get() : p.suspect) : 0;
+    if (p && !p.isBot && sus >= 10) {
+      h = h.replace(/<button\b[^>]*>[\s\S]{0,220}?разойтись миром[\s\S]{0,220}?<\/button>/gi, '');
+      h += '<p style="margin-top:10px;opacity:.75;font-size:13px">🕊 Проигравший не выбирает мир. Мир выбирают победители.</p>';
+    }
+  }
+  return _sm169(h, opts);
+};
