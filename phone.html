@@ -18,9 +18,15 @@
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
   .stat{background:rgba(255,255,255,.05);border-radius:8px;padding:6px;text-align:center;font-size:12px}
   .stat b{display:block;font-size:16px;color:#ffd54f}
+  #top{margin-top:8px}
+  #top .trow{display:flex;justify-content:space-between;font-size:13px;padding:2px 4px;background:rgba(255,255,255,.04);border-radius:6px;margin:2px 0}
+  #top .trow b{color:#ff8a80}
   #remote{display:none;gap:8px;margin-top:12px}
   #remote button{flex:1;padding:12px 0;background:linear-gradient(180deg,#1a2340,#0d1226);border:2px solid #d4af37;color:#ffd54f;font-weight:900;font-size:14px;border-radius:10px;cursor:pointer}
   #remote button:disabled{opacity:.35;cursor:default}
+  #remote2{display:none;gap:8px;margin-top:8px}
+  #remote2 button{flex:1;padding:10px 0;background:linear-gradient(180deg,#1a2340,#0d1226);border:2px solid #b0bec5;color:#cfd8dc;font-weight:700;font-size:13px;border-radius:10px;cursor:pointer}
+  #remote2 button:disabled{opacity:.35;cursor:default}
   #mmodal{display:none;margin-top:12px;border:2px solid #7cfc9a;border-radius:12px;padding:10px;background:rgba(124,252,154,.07)}
   #mm-title{font-size:13px;font-weight:900;color:#7cfc9a;text-align:center;margin-bottom:6px}
   #hand{display:none;margin-top:12px}
@@ -46,6 +52,7 @@
     </div>
     <div class="row"><span>🎟 Жетоны</span><b id="s-tok">0</b></div>
     <div id="turn"></div>
+    <div id="top"></div>
   </div>
   <div id="mmodal">
     <div id="mm-title"></div>
@@ -59,6 +66,10 @@
   <div id="remote">
     <button id="btn-roll" disabled>🎲 Кубик</button>
     <button id="btn-end" disabled>✅ Ход</button>
+  </div>
+  <div id="remote2">
+    <button id="btn-accuse" disabled>🚔 Обвинить</button>
+    <button id="btn-mor" disabled>🎭 Мораль</button>
   </div>
 </div>
 <script>
@@ -85,10 +96,21 @@ function handle(d) {
     var ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.lastLog || '…';
     document.getElementById('dash').style.display = 'block';
     document.getElementById('remote').style.display = 'flex';
+    document.getElementById('remote2').style.display = 'flex';
     document.getElementById('turn').textContent = 'Раунд ' + d.round + ' · ходит: ' + d.turn;
     var my = d.turn === myName;
     document.getElementById('btn-roll').disabled = !my;
     document.getElementById('btn-end').disabled = !my;
+    document.getElementById('btn-accuse').disabled = !my;
+    document.getElementById('btn-mor').disabled = !my;
+    var top = document.getElementById('top');
+    top.innerHTML = '';
+    (d.top || []).forEach(function (t, i) {
+      var el = document.createElement('div');
+      el.className = 'trow';
+      el.innerHTML = '<span>' + (i + 1) + '. ' + t.name + '</span><b>🚨 ' + t.sus + '</b>';
+      top.appendChild(el);
+    });
     var me = null;
     for (var i = 0; i < d.players.length; i++) if (d.players[i].name === myName) me = d.players[i];
     if (me) {
@@ -145,6 +167,8 @@ document.getElementById('hand-row').addEventListener('scroll', function () {
 });
 document.getElementById('btn-roll').onclick = function () { send({ cmd: 'roll' }); };
 document.getElementById('btn-end').onclick = function () { send({ cmd: 'end' }); };
+document.getElementById('btn-accuse').onclick = function () { send({ cmd: 'accuse' }); };
+document.getElementById('btn-mor').onclick = function () { send({ cmd: 'mor' }); };
 if (rdata) {
   try { showRole(JSON.parse(decodeURIComponent(escape(atob(rdata))))); }
   catch (e) { st.textContent = '❌ Ссылка повреждена — пересканируй QR.'; }
