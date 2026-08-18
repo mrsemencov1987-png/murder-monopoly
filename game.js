@@ -5458,3 +5458,66 @@ window.tvRescue155 = function () {
   stl.textContent = '#overlay div[style*="background:#fff"] img{width:min(300px,62vw)!important;height:auto!important}';
   document.head.appendChild(stl);
 })();
+// ============================================
+// ДОПОЛНЕНИЕ v162 — РЕЖИМ МОНИТОРА: ПОЛЕ НА ЭКРАН, ОСТАЛЬНОЕ НА ТЕЛЕФОН
+// ============================================
+(function () {
+  const stl = document.createElement('style');
+  stl.textContent = 'body.mm-tv .side-panel,body.mm-tv .right-panel,body.mm-tv .bottom-panel{display:none!important}' +
+    'body.mm-tv .game-main{display:block!important;height:auto!important}' +
+    'body.mm-tv #boardWrapper{width:100%!important;margin:0 auto!important}';
+  document.head.appendChild(stl);
+  setInterval(() => {
+    const on = !!(window.mmBus145 && Object.keys(mmBus145.joined).length);
+    document.body.classList.toggle('mm-tv', on);
+    const b = document.getElementById('board');
+    if (on && b) {
+      b.style.zoom = 1;
+      const bw = b.offsetWidth || 1000;
+      const k = Math.max(.3, Math.min((window.innerWidth - 40) / bw, (window.innerHeight - 130) / (b.offsetHeight || 1000), 1.6));
+      b.style.zoom = k;
+    }
+  }, 1500);
+})();
+function phoneCmd141(d, conn) {
+  if (!S || !d || !d.cmd) return;
+  if (d.cmd === 'modal') { mmModalClick152(d.i | 0); return; }
+  if (d.cmd === 'accuse') { if (window.accuseOpen) accuseOpen(); return; }
+  if (d.cmd === 'mor') { if (window.morOpen) morOpen(); return; }
+  if (d.cmd === 'preview') {
+    document.querySelectorAll('.mm-preview159').forEach(el => el.classList.remove('mm-preview159'));
+    if (d.key) { const el = document.querySelector('[data-key="' + d.key + '"]'); if (el) { el.classList.add('mm-preview159'); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } }
+    return;
+  }
+  const cur = S.players[S.cur];
+  if (!cur || cur.isBot || cur.name !== conn._mmName) return;
+  if (d.cmd === 'roll') { const b = document.getElementById('rollBtn'); if (b && !b.disabled && !S.isBusy) rollDice(); }
+  if (d.cmd === 'end') { const b = document.getElementById('endBtn'); if (b && !b.disabled) endTurn(); }
+  if (d.cmd === 'play') {
+    document.querySelectorAll('.mm-preview159').forEach(el => el.classList.remove('mm-preview159'));
+    const el = document.querySelector('[data-key="' + d.key + '"]'); if (el) el.click();
+  }
+}
+function qrState138() {
+  try {
+    if (!S || !mmBus145 || !Object.keys(mmBus145.joined).length) return;
+    const now = Date.now();
+    if (now - (window._mm148t || 0) < 800) return;
+    window._mm148t = now;
+    const cur = S.players[S.cur] || {};
+    const logEl = document.querySelector('#log div, .log div, .log-line, .chronicle div');
+    qrBroadcast138({
+      type: 'state', round: S.round || S.turnCount || 1, turn: cur.name || '',
+      lastLog: logEl ? logEl.textContent.trim() : '',
+      top: S.players.slice().sort((a, b) => num150(b.suspect) - num150(a.suspect)).slice(0, 3)
+        .map(p => ({ name: p.name, sus: num150(p.suspect) })),
+      players: S.players.map(p => ({
+        name: p.name, coins: num150(p.coins != null ? p.coins : p.money),
+        suspect: num150(p.suspect), fatigue: num150(p.fatigue), fear: num150(p.fear), tokens: num150(p.tokens)
+      }))
+    });
+    if (cur && !cur.isBot && mmBus145.joined[cur.name]) {
+      mmSend145(cur.name, { type: 'hand', cards: handFromDom158() });
+    }
+  } catch (e) {}
+}
