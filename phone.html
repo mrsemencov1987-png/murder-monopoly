@@ -30,10 +30,11 @@
   #mmodal{display:none;margin-top:12px;border:2px solid #7cfc9a;border-radius:12px;padding:10px;background:rgba(124,252,154,.07)}
   #mm-title{font-size:13px;font-weight:900;color:#7cfc9a;text-align:center;margin-bottom:6px}
   #hand{display:none;margin-top:12px}
-  #hand-row{display:flex;gap:6px;overflow-x:auto;padding:6px 2px;scroll-snap-type:x mandatory}
-  #hand-row div{min-width:96px;scroll-snap-align:start;background:rgba(255,255,255,.07);border:1px solid rgba(212,175,55,.4);border-radius:10px;padding:8px;font-size:12px;text-align:center;cursor:pointer}
+  #hand-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  #hand-row div{background:rgba(255,255,255,.07);border:1px solid rgba(212,175,55,.4);border-radius:10px;padding:8px 4px;font-size:11px;text-align:center;cursor:pointer;word-break:break-word}
   #hand-row div.sel{border-color:#7cfc9a;box-shadow:0 0 12px rgba(124,252,154,.6)}
   #card-info{display:none;margin-top:6px;background:rgba(124,252,154,.08);border:1px solid rgba(124,252,154,.4);border-radius:10px;padding:8px;font-size:12px;text-align:center}
+  #card-cancel{margin-top:6px;padding:6px 14px;background:#101632;border:1px solid #b0bec5;color:#cfd8dc;border-radius:8px;cursor:pointer;font-size:12px}
 </style>
 </head>
 <body>
@@ -59,9 +60,10 @@
     <div id="mm-btns"></div>
   </div>
   <div id="hand">
-    <div style="font-size:11px;color:#8a93af;text-align:center">🃏 Тап = показать на мониторе · второй тап = сыграть · свайп = отмена</div>
+    <div style="font-size:11px;color:#8a93af;text-align:center">🃏 Тап = показать на мониторе · второй тап = сыграть</div>
     <div id="hand-row"></div>
     <div id="card-info"></div>
+    <div style="text-align:center"><button id="card-cancel" style="display:none">✖ Отмена</button></div>
   </div>
   <div id="remote">
     <button id="btn-roll" disabled>🎲 Кубик</button>
@@ -88,6 +90,13 @@ function showRole(d) {
   r.style.display = 'block'; r.style.color = d.c || '#ffd54f';
   r.textContent = ROLN[d.r] || d.r;
   var w = document.getElementById('who'); w.style.display = 'block'; w.textContent = 'Ты играешь за: ' + d.n;
+}
+function clearSel() {
+  selKey = null;
+  send({ cmd: 'preview', key: null });
+  document.getElementById('card-info').style.display = 'none';
+  document.getElementById('card-cancel').style.display = 'none';
+  [...document.getElementById('hand-row').children].forEach(function (x) { x.classList.remove('sel'); });
 }
 function onMsg(e) { try { var o = JSON.parse(e.data); handle(JSON.parse(o.message)); } catch (err) {} }
 function handle(d) {
@@ -143,13 +152,14 @@ function handle(d) {
       var el = document.createElement('div');
       el.textContent = c.name;
       el.onclick = function () {
-        if (selKey === c.key) { send({ cmd: 'play', key: c.key }); selKey = null; document.getElementById('card-info').style.display = 'none'; }
+        if (selKey === c.key) { send({ cmd: 'play', key: c.key }); clearSel(); }
         else {
           selKey = c.key;
           send({ cmd: 'preview', key: c.key });
           var info = document.getElementById('card-info');
           info.style.display = 'block';
           info.innerHTML = '<b>' + c.name + '</b>' + (c.desc ? '<br>' + c.desc : '') + '<br><i>второй тап = сыграть</i>';
+          document.getElementById('card-cancel').style.display = 'inline-block';
         }
         [...wrap.children].forEach(function (x) { x.classList.toggle('sel', x === el && selKey); });
       };
@@ -158,13 +168,7 @@ function handle(d) {
   }
   if (d.type === 'text') { var ev2 = document.getElementById('event'); ev2.style.display = 'block'; ev2.textContent = d.text; }
 }
-var swipeT = null;
-document.getElementById('hand-row').addEventListener('scroll', function () {
-  clearTimeout(swipeT);
-  swipeT = setTimeout(function () {
-    if (selKey) { selKey = null; send({ cmd: 'preview', key: null }); document.getElementById('card-info').style.display = 'none'; }
-  }, 250);
-});
+document.getElementById('card-cancel').onclick = clearSel;
 document.getElementById('btn-roll').onclick = function () { send({ cmd: 'roll' }); };
 document.getElementById('btn-end').onclick = function () { send({ cmd: 'end' }); };
 document.getElementById('btn-accuse').onclick = function () { send({ cmd: 'accuse' }); };
