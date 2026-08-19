@@ -68,8 +68,9 @@ function hostCall197() {
 }
 setInterval(() => {
   if (!window.S || S.isOver || !window.mmBus145) return;
-  if (Math.random() > 0.3) return;
-  const humans = S.players.filter(p => !p.isBot && mmBus145.joined[p.name]);
+  const humans = S.players.filter(p => !p.isBot && mmBus145.joined && mmBus145.joined[p.name]);
+  console.log('📞 чек: людей=' + humans.length + ' · host=' + window.MM_HOST + ' · joined=' + Object.keys(mmBus145.joined || {}).join(','));
+  if (Math.random() > 0.5) return;
   if (window.MM_HOST === 'human' && (!humans.length || Math.random() < 0.3)) { hostCall197(); return; }
   if (!humans.length) return;
   const p = humans[Math.floor(Math.random() * humans.length)];
@@ -77,7 +78,7 @@ setInterval(() => {
   pending197 = { name: p.name, entry: e };
   mmSend145(p.name, { type: 'call', caller: e.caller });
   log('☎ ' + e.caller + ' звонит: ' + p.name + '…');
-}, 25000);
+}, 15000);
 function applyDecline201(p, caller) {
   let msg = '';
   if (/Спагетти/.test(caller)) { p.fear.add(2); p.suspect.add(1); msg = '🍝 Спагетти запомнил игнор: +2 страха, +1 подозрение'; }
