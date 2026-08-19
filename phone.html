@@ -259,6 +259,10 @@ if (room) {
   st.textContent = '❌ Нет данных — отсканируй QR заново.';
 }
 ntfyPub = function () {};
+document.getElementById('wh-btn').onclick = function () {
+var v = document.getElementById('wh-in').value.trim();
+if (v) { send({ cmd: 'whisper', text: v }); document.getElementById('wh-in').value = ''; }
+};
 </script>
 </body>
 </html>
