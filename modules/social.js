@@ -39,6 +39,7 @@
       if (left <= 0) { clearInterval(iv); b.remove(); }
     }, 1000);
   }
+  window.showRumor188 = showRumor;
 })();
 
 // --- 2) ШЁПОТ: телефон шепчет ведущему на монитор ---
