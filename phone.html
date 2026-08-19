@@ -73,6 +73,10 @@
     <button id="btn-accuse" disabled>🚔 Обвинить</button>
     <button id="btn-mor" disabled>🎭 Мораль</button>
   </div>
+    <div id="whisper" style="display:none;margin-top:8px;gap:6px">
+    <input id="wh-in" placeholder="🤫 шёпот ведущему…" style="flex:1;background:#101632;border:1px solid #7cfc9a;color:#d8ffd8;border-radius:8px;padding:8px;font-size:13px">
+    <button id="wh-btn" style="padding:8px 10px;background:#101632;border:1px solid #7cfc9a;color:#7cfc9a;border-radius:8px;cursor:pointer">🤫</button>
+  </div>
 </div>
 <script>
 window.onerror = function (m) { document.getElementById('status').textContent = '❌ JS: ' + m; };
