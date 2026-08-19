@@ -14,7 +14,7 @@
     'задаёт слишком много вопросов о чужих алиби'
   ];
   setInterval(() => {
-    if (!window.S || !S.players || S.isOver || S.round < 2) return;
+    if (!window.S || !S.players || S.isOver || S.round < 2 || window.MM_HOST === 'human') return;
     if (S.round !== lastRound) {
       lastRound = S.round;
       if (Math.random() < 0.6) showRumor();
