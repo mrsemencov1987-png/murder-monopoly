@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ММ — пульт ведущего</title>
+<style>
+body{margin:0;background:#071a10;color:#dfe6ff;font-family:Segoe UI,Arial;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box}
+.card{width:min(94vw,420px);border:3px solid #7cfc9a;border-radius:16px;padding:16px;background:linear-gradient(160deg,#0d2417,#071a10);box-shadow:0 0 40px rgba(124,252,154,.25)}
+h1{color:#7cfc9a;font-size:15px;letter-spacing:2px;text-align:center;margin:0 0 8px}
+#status{font-size:11px;color:#8a93af;text-align:center;margin-bottom:8px}
+.sec{font-size:12px;font-weight:900;color:#7cfc9a;margin:10px 0 4px}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.row button{flex:1;min-width:70px;padding:12px 4px;background:#10241a;border:2px solid #7cfc9a;color:#d8ffd8;font-weight:800;font-size:12px;border-radius:10px;cursor:pointer}
+#feed{max-height:120px;overflow:auto;background:rgba(255,255,255,.05);border-radius:10px;padding:6px;font-size:11px}
+#feed div{padding:2px 0;border-bottom:1px solid rgba(124,252,154,.15)}
+#whispers div{background:rgba(124,252,154,.12);border:1px solid #7cfc9a;border-radius:10px;padding:6px;font-size:12px;margin:4px 0}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>🎬 ПУЛЬТ ВЕДУЩЕГО</h1>
+<div id="status">Подключение…</div>
+<div class="sec">🌆 Голос улиц (выбрать):</div>
+<div class="row" id="voices"></div>
+<div class="sec">🎛 Шоу:</div>
+<div class="row">
+<button id="b-rumor">🗣 Слух</button>
+<button id="b-pause">⏸/▶ пауза</button>
+<button id="b-cinema">🎬 Кино</button>
+</div>
+<div class="sec">🤫 Шёпоты игроков:</div>
+<div id="whispers"><i style="opacity:.5">пока тихо…</i></div>
+<div class="sec">📜 Хроника:</div>
+<div id="feed"></div>
+</div>
+<script>
+var st = document.getElementById('status');
+var room = (location.hash.match(/room=([A-Z0-9]+)/i) || [])[1];
+var MM_BROKERS = ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt'];
+var CDNS = ['https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js', 'https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js'];
+var clients = [], seen = {};
+if (!room) st.textContent = '❌ Нет комнаты — открой QR ведущего заново.';
+function loadMqtt(cb) { if (window.mqtt) return cb(); var i = 0; var n = function () { if (i >= CDNS.length) return cb(); var s = document.createElement('script'); s.src = CDNS[i++]; s.onload = cb; s.onerror = n; document.head.appendChild(s); }; n(); }
+function send(d) { var s = JSON.stringify({ name: 'ВЕДУЩИЙ', d: d }); clients.forEach(function (c) { if (c.connected) c.publish('mm145_' + room + '_up', s); }); }
+function onMsg(payload) {
+  if (seen[payload]) return;
+  seen[payload] = 1;
+  try {
+    var d = JSON.parse(payload);
+    if (d.type === 'whisper') {
+      var w = document.getElementById('whispers');
+      if (w.querySelector('i')) w.innerHTML = '';
+      var el = document.createElement('div');
+      el.textContent = '🤫 ' + d.from + ': ' + d.text;
+      w.prepend(el);
+    }
+    if (d.type === 'text') {
+      var f = document.getElementById('feed');
+      var el2 = document.createElement('div');
+      el2.textContent = d.text;
+      f.prepend(el2);
+      while (f.children.length > 30) f.removeChild(f.lastChild);
+    }
+  } catch (e) {}
+}
+var VOICES = [['appear', '👁 Явление'], ['disappear', '🌫 Исчезновение'], ['curse', '🕯 Проклятие'], ['shuffle', '🔀 Тасовка'], ['chaos', '🌪 Хаос']];
+var vr = document.getElementById('voices');
+VOICES.forEach(function (v) {
+  var b = document.createElement('button');
+  b.textContent = v[1];
+  b.onclick = function () { send({ cmd: 'hvoice', key: v[0] }); };
+  vr.appendChild(b);
+});
+document.getElementById('b-rumor').onclick = function () { send({ cmd: 'hrumor' }); };
+document.getElementById('b-pause').onclick = function () { send({ cmd: 'hpause' }); };
+document.getElementById('b-cinema').onclick = function () { send({ cmd: 'hcinema' }); };
+if (room) {
+  loadMqtt(function () {
+    MM_BROKERS.forEach(function (url) {
+      try {
+        var c = mqtt.connect(url, { reconnectPeriod: 5000, connectTimeout: 6000 });
+        c.on('connect', function () {
+          st.textContent = '🔗 Пульт ведущего на связи';
+          c.subscribe('mm145_' + room + '_down_host');
+          c.subscribe('mm145_' + room + '_down_all');
+          c.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', host: true, name: 'ВЕДУЩИЙ' }));
+        });
+        c.on('message', function (t, p) { onMsg(p.toString()); });
+        clients.push(c);
+      } catch (e) {}
+    });
+  });
+  setInterval(function () {
+    clients.forEach(function (c) { if (c.connected) c.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', host: true, name: 'ВЕДУЩИЙ' })); });
+  }, 10000);
+}
+</script>
+</body>
+</html>
