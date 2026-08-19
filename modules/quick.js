@@ -20,7 +20,7 @@ document.addEventListener('keydown', e => {
   if (/INPUT|TEXTAREA|SELECT/.test(tag)) return;
   const ov = document.getElementById('overlay');
   if (ov && ov.style.display !== 'none' && ov.innerHTML.trim()) return;
-  if (!window.S || S.isBusy || S.isOver) return;
+   if (typeof S === 'undefined' || !S || S.isBusy || S.isOver) return;
   const p = S.players[S.cur];
   if (!p || p.isBot) return;
   if (e.code === 'Space') {
