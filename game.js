@@ -5686,22 +5686,6 @@ function openES167() {
   es.onerror = () => { if (es.readyState === 2) setTimeout(openES167, 3000); };
 }
 // ============================================
-// ДОПОЛНЕНИЕ v169 — ДУЭЛЬ: ПРОИГРАВШИЙ НЕ ВЫБИРАЕТ МИР
-// ============================================
-const _sm169 = window.showModal;
-window.showModal = function (html, opts) {
-  let h = html || '';
-  if (/разойтись миром/i.test(h)) {
-    const p = S && S.players[S.cur];
-    const sus = p && p.suspect ? (p.suspect.get ? p.suspect.get() : p.suspect) : 0;
-    if (p && !p.isBot && sus >= 10) {
-      h = h.replace(/<button\b[^>]*>[\s\S]{0,220}?разойтись миром[\s\S]{0,220}?<\/button>/gi, '');
-      h += '<p style="margin-top:10px;opacity:.75;font-size:13px">🕊 Проигравший не выбирает мир. Мир выбирают победители.</p>';
-    }
-  }
-  return _sm169(h, opts);
-};
-// ============================================
 // ДОПОЛНЕНИЕ v171 — КАНАЛ НА MQTT: ВСЕ БРОКЕРЫ ОДНОВРЕМЕННО, БЕЗ ЛИМИТОВ
 // ============================================
 function loadMqtt171() {
@@ -5803,25 +5787,6 @@ function qrBroadcast138(msg) {
     ntfyPub172('mm145_' + mmBus145.room + '_down_all', s);
   }
 }
-// ============================================
-// ДОПОЛНЕНИЕ v173 — СТОРОЖ: ПРОИГРАВШИЙ ФИЗИЧЕСКИ НЕ ВИДИТ КНОПКУ МИРА
-// ============================================
-(function () {
-  function sweep173() {
-    const p = S && S.players[S.cur];
-    if (!p || p.isBot) return;
-    const sus = p.suspect ? (p.suspect.get ? p.suspect.get() : p.suspect) : 0;
-    if (sus < 10) return;
-    document.querySelectorAll('button').forEach(b => {
-      if (/разойтись миром/i.test(b.textContent || '')) {
-        b.style.display = 'none';
-        b.disabled = true;
-      }
-    });
-  }
-  new MutationObserver(sweep173).observe(document.body, { childList: true, subtree: true });
-  setInterval(sweep173, 700);
-})();
 // ============================================
 // ДОПОЛНЕНИЕ v174 — QR НЕСЁТ И РОЛЬ, И АДРЕС КОМНАТЫ
 // ============================================
