@@ -78,6 +78,18 @@ setInterval(() => {
   mmSend145(p.name, { type: 'call', caller: e.caller });
   log('☎ ' + e.caller + ' звонит: ' + p.name + '…');
 }, 25000);
+function applyDecline201(p, caller) {
+  let msg = '';
+  if (/Спагетти/.test(caller)) { p.fear.add(2); p.suspect.add(1); msg = '🍝 Спагетти запомнил игнор: +2 страха, +1 подозрение'; }
+  else if (/редактор|Туман|Правда|Сплетник/.test(caller)) { p.suspect.add(2); msg = '📰 «Свидетель отказался комментировать»: +2 подозрения'; }
+  else if (/Банк/.test(caller)) { p.coins = Math.max(0, p.coins - 30); msg = '🏦 Штраф за игнор: −30 монет'; }
+  else if (/Налоговая/.test(caller)) { p.coins = Math.max(0, p.coins - 50); p.fear.add(1); msg = '🧾 Выездная проверка: −50 монет, +1 страх'; }
+  else if (/Мэр/.test(caller)) { p.reputation.add(-1); msg = '🏛 Мэр обиделся: −1 репутация'; }
+  else if (/Незнакомец/.test(caller)) { p.suspect.add(1); msg = '🌀 Слух без ответа = подтверждённый: +1 подозрение'; }
+  else msg = '📞 Звонок пропущен без последствий';
+  log('🔕 ' + p.name + ' сбросил (' + caller + '). ' + msg);
+  qrBroadcast138({ type: 'text', text: '🔕 ' + p.name + ' сбросил: ' + msg });
+}
 const _pc197 = phoneCmd141;
 window.phoneCmd141 = function (d, conn) {
   if (d && d.cmd === 'answer' && pending197 && conn && conn._mmName === pending197.name) {
@@ -88,6 +100,13 @@ window.phoneCmd141 = function (d, conn) {
     log('☎ ' + e.caller + ' → ' + p.name + ': разговор состоялся');
     if (typeof updateUI === 'function') updateUI();
     playLine198(e.snd, e.text);
+    return;
+  }
+  if (d && d.cmd === 'decline' && pending197 && conn && conn._mmName === pending197.name) {
+    const e = pending197.entry; pending197 = null;
+    const p = S.players.find(x => x.name === conn._mmName);
+    applyDecline201(p, e.caller);
+    if (typeof updateUI === 'function') updateUI();
     return;
   }
   return _pc197(d, conn);
