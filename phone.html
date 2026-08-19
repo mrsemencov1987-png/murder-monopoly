@@ -140,6 +140,7 @@ function onPayload(payload) {
 function handle(d) {
   if (d.type === 'role') showRole({ n: d.name, r: d.role, c: d.color });
   if (d.type === 'state') {
+    document.getElementById('whisper').style.display = 'flex';
     var ev = document.getElementById('event'); ev.style.display = 'block'; ev.textContent = d.lastLog || '…';
     document.getElementById('dash').style.display = 'block';
     document.getElementById('remote').style.display = 'flex';
