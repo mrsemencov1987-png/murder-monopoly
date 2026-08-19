@@ -42,7 +42,19 @@ var CDNS = ['https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js', 'https://cdn.jsdel
 var clients = [], seen = {};
 if (!room) st.textContent = '❌ Нет комнаты — открой QR ведущего заново.';
 function loadMqtt(cb) { if (window.mqtt) return cb(); var i = 0; var n = function () { if (i >= CDNS.length) return cb(); var s = document.createElement('script'); s.src = CDNS[i++]; s.onload = cb; s.onerror = n; document.head.appendChild(s); }; n(); }
-function send(d) { var s = JSON.stringify({ name: 'ВЕДУЩИЙ', d: d }); clients.forEach(function (c) { if (c.connected) c.publish('mm145_' + room + '_up', s); }); }
+var queue207 = [];
+function send(d) {
+  var s = JSON.stringify({ name: 'ВЕДУЩИЙ', d: d });
+  var sent = false;
+  clients.forEach(function (c) { if (c.connected) { c.publish('mm145_' + room + '_up', s); sent = true; } });
+  if (!sent) queue207.push(s);
+}
+setInterval(function () {
+  if (!queue207.length) return;
+  clients.forEach(function (c) {
+    if (c.connected) { queue207.forEach(function (s) { c.publish('mm145_' + room + '_up', s); }); queue207 = []; }
+  });
+}, 1500);
 function onMsg(payload) {
   if (seen[payload]) return;
   seen[payload] = 1;
