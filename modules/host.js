@@ -49,3 +49,28 @@ function render193() {
 }
 setInterval(() => { if (window.MM_HOST === 'human' && window.S && !S.isOver) render193(); }, 2000);
 console.log('🎬 host.js: ведущий — отдельный выбор');
+// ============================================
+// ДОПОЛНЕНИЕ v194 — ВЕДУЩИЙ НЕ ИГРОК: ПЕРВОЕ ИМЯ УХОДИТ В ВЕДУЩИЕ
+// ============================================
+const _sg194 = window.startGame;
+window.startGame = function () {
+  const sel = document.getElementById('hostSel193');
+  if (sel && sel.value === 'human') {
+    const inputs = [...document.querySelectorAll('input[id^="playerName_"]')];
+    const named = inputs.find(i => (i.value || '').trim());
+    if (named) {
+      window.MM_HOST_NAME = named.value.trim();
+      named.value = '';
+      const bots = document.getElementById('botsEnabled');
+      if (bots) bots.checked = true;
+    } else window.MM_HOST_NAME = window.MM_HOST_NAME || 'Ведущий';
+  }
+  return _sg194.apply(this, arguments);
+};
+setInterval(() => {
+  const p = document.getElementById('hostPanel193');
+  if (p && window.MM_HOST_NAME) {
+    const b = p.querySelector('b');
+    if (b) b.textContent = '🎬 ' + MM_HOST_NAME + ' — пульт ведущего';
+  }
+}, 2500);
