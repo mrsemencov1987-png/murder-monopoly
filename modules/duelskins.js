@@ -1,41 +1,15 @@
 // ============================================
-// ДОПОЛНЕНИЕ v189 (модуль) — МИР РЕШАЕТ ТОЛЬКО ПОБЕДИТЕЛЬ
-// ============================================
-(function () {
-  const LOSE = /ПОРАЖЕНИЕ|ПРОИГРАЛ|ПОВЕРЖЕН|РАСКРЫТ|ПОРАЖ/i;
-  const WIN = /ПОБЕД|ВЫСТОЯЛ|ТРИУМФ|ВЫИГРАЛ/i;
-  function sweep189() {
-    document.querySelectorAll('button, [onclick]').forEach(el => {
-      const t = el.textContent || '';
-      if (!/разойтись миром/i.test(t)) return;
-      let up = el.parentElement, ctx = '', depth = 0;
-      while (up && depth < 7) {
-        const txt = up.textContent || '';
-        if (LOSE.test(txt) || WIN.test(txt)) { ctx = txt; break; }
-        up = up.parentElement; depth++;
-      }
-      const loser = LOSE.test(ctx);
-      const winner = WIN.test(ctx);
-      if (loser || !winner) { el.style.display = 'none'; el.disabled = true; }
-      else { el.style.display = ''; el.disabled = false; }
-    });
-  }
-  new MutationObserver(sweep189).observe(document.body, { childList: true, subtree: true });
-  setInterval(sweep189, 700);
-})();
-
-// ============================================
 // ДОПОЛНЕНИЕ v190 (модуль) — СКИНЫ: БАФЫ/ДЕБАФЫ, ПОСТОЯННЫЕ И ВРЕМЕННЫЕ
 // ============================================
 const BUFFS190 = {
-  crown:        { stat: 'reputation',  delta: 1,  rounds: 0 },  // постоянный
+  crown:        { stat: 'reputation',  delta: 1,  rounds: 0 },
   cross:        { stat: 'reputation',  delta: 1,  rounds: 0 },
   backpack:     { stat: 'connections', delta: 1,  rounds: 0 },
   ushanka:      { stat: 'fatigue',     delta: -1, rounds: 0 },
-  corrupt:      { stat: 'reputation',  delta: -1, rounds: 0 },  // дебаф-плата за силу
-  void_blade:   { stat: 'fear',        delta: 1,  rounds: 0 },  // жуткое оружие пугает владельца
+  corrupt:      { stat: 'reputation',  delta: -1, rounds: 0 },
+  void_blade:   { stat: 'fear',        delta: 1,  rounds: 0 },
   eternal_flame:{ stat: 'adrenaline',  delta: 1,  rounds: 0 },
-  watch:        { stat: 'reputation',  delta: 1,  rounds: 3 },  // временные
+  watch:        { stat: 'reputation',  delta: 1,  rounds: 3 },
   sunglasses:   { stat: 'fear',        delta: -1, rounds: 2 },
   rubber_duck:  { stat: 'fear',        delta: -1, rounds: 2 },
   scarf:        { stat: 'fatigue',     delta: -1, rounds: 3 },
@@ -59,7 +33,6 @@ window.buySkin = function (p, cell) {
   _buy190(p, cell);
   applyBuff190(p, cell.skinId);
 };
-// выветривание временных эффектов
 setInterval(() => {
   if (!window.S || !S.players) return;
   S.players.forEach(p => {
@@ -74,7 +47,6 @@ setInterval(() => {
     p.buffs190 = left;
   });
 }, 2000);
-// отображение активных бафов в статистике
 const _ui190 = window.updateUI;
 window.updateUI = function () {
   _ui190();
@@ -85,4 +57,33 @@ window.updateUI = function () {
     '<div class="stat-item" style="opacity:.9">⏳ ' + (b.delta > 0 ? '+' : '') + b.delta + ' ' + b.stat + ' (' + (b.until - S.round) + ' р.)</div>'
   ).join('');
 };
-console.log('⚖️🗡 duelskins.js: мир только у победителя + бафы скинов');
+
+// ============================================
+// ДОПОЛНЕНИЕ v200 — МИР ТОЛЬКО У ПОБЕДИТЕЛЯ (маркер: «принять исход» = окно проигравшего)
+// ============================================
+const _sm200 = window.showModal;
+window.showModal = function (html, opts) {
+  let h = html || '';
+  if (/разойтись миром/i.test(h) && /принять исход/i.test(h)) {
+    h = h.replace(/<button\b[^>]*>[\s\S]{0,220}?разойтись миром[\s\S]{0,220}?<\/button>/gi, '');
+    h += '<p style="margin-top:8px;opacity:.75;font-size:13px">🕊 Пощада в этом городе — редкость. Проигравший принимает исход.</p>';
+  }
+  return _sm200(h, opts);
+};
+(function () {
+  function sweep200() {
+    document.querySelectorAll('button, [onclick]').forEach(el => {
+      const t = el.textContent || '';
+      if (!/разойтись миром/i.test(t)) return;
+      let up = el.parentElement, depth = 0, found = false;
+      while (up && depth < 7) {
+        if (/принять исход/i.test(up.textContent || '')) { found = true; break; }
+        up = up.parentElement; depth++;
+      }
+      if (found) { el.style.display = 'none'; el.disabled = true; }
+    });
+  }
+  new MutationObserver(sweep200).observe(document.body, { childList: true, subtree: true });
+  setInterval(sweep200, 700);
+})();
+console.log('⚖️🗡 duelskins.js v200: мир только у победителя + бафы скинов');
