@@ -8,7 +8,8 @@
   body{margin:0;background:#0a0e20;color:#dfe6ff;font-family:Segoe UI,Arial;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box}
   .card{width:min(94vw,400px);border:3px solid #d4af37;border-radius:16px;padding:16px;background:linear-gradient(160deg,#141a35,#0a0e20);box-shadow:0 0 40px rgba(212,175,55,.3)}
   h1{color:#d4af37;font-size:16px;letter-spacing:2px;text-align:center;margin:0 0 8px}
-  #role{font-size:26px;font-weight:900;text-align:center;margin:6px 0}
+  #role{font-size:34px;font-weight:900;text-align:center;margin:8px 0;letter-spacing:1px;animation:rolePulse 2.5s infinite}
+  @keyframes rolePulse{0%,100%{text-shadow:0 0 8px currentColor}50%{text-shadow:0 0 22px currentColor}}
   #who{text-align:center;font-size:13px;opacity:.8}
   #event{min-height:38px;background:rgba(255,255,255,.06);border:1px solid rgba(212,175,55,.35);border-radius:10px;padding:8px;font-size:13px;text-align:center;margin:8px 0}
   .row{display:flex;justify-content:space-between;font-size:14px;padding:3px 2px}
