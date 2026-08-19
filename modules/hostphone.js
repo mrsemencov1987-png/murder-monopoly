@@ -20,9 +20,10 @@ setInterval(() => {
     let src = '';
     if (window.QRious) { try { src = new QRious({ value: url, size: 400, level: 'M' }).toDataURL(); } catch (e) {} }
     if (!src) src = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(url);
-    window.MM_VOICE_ALLOW = true;
-    showModal('<h2>🎬 Пульт ведущего на телефоне</h2><div style="background:#fff;padding:12px;border-radius:12px;display:inline-block"><img src="' + src + '" style="width:min(260px,60vw)"></div><p style="font-size:11px;word-break:break-all">или вручную: ' + url + '</p><button data-val="ok">Готово</button>');
-    window.MM_VOICE_ALLOW = false;
+    showPlate178('<h2 style="color:#d4af37">🎬 Пульт ведущего на телефоне</h2>' +
+      '<div style="background:#fff;padding:12px;border-radius:12px;display:inline-block;margin:10px 0"><img src="' + src + '" style="width:min(260px,60vw);display:block"></div>' +
+      '<p style="font-size:11px;word-break:break-all">или вручную: ' + url + '</p>' +
+      '<button data-val="ok" style="padding:12px 24px;margin-top:10px;font-size:16px;font-weight:bold;cursor:pointer;background:#d4af37;color:#0a0e20;border:none;border-radius:8px">Готово</button>');
   };
   p.appendChild(b);
 }, 2000);
