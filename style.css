@@ -298,30 +298,6 @@ header, .header { position: relative; z-index: 30; display: flex !important; fle
 .tk-hint { font-size: 10px; color: #68748f; text-align: center; }
 /* === v107: окно-призрак не перехватывает клики === */
 .rp103x { pointer-events: none !important; }
-// ============================================
-// ДОПОЛНЕНИЕ v108 — В ПРАВИЛАХ ТОТ ЖЕ МУЖСКОЙ РОБОТ, ЧТО В ИГРЕ
-// ============================================
-function ruleTts(text) {
-  if (!window.speechSynthesis) return;
-  const voxOn = (window.MMSET ? MMSET.voice : true);
-  if (!voxOn) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'ru-RU';
-  u.rate = .92;
-  u.pitch = .55; // низко — мужской тембр, как в игре
-  u.volume = 1;
-  const pick = () => {
-    const vs = speechSynthesis.getVoices();
-    const male = vs.find(v => /ru/i.test(v.lang) && /pavel|male|yuri|dmitr|aleksandr|alexander/i.test(v.name));
-    const anyRu = vs.find(v => /ru/i.test(v.lang));
-    const v = male || anyRu;
-    if (v) u.voice = v;
-    speechSynthesis.speak(u);
-  };
-  if (speechSynthesis.getVoices().length) pick();
-  else speechSynthesis.onvoiceschanged = () => pick();
-}
 /* === v117: медиа-слот окна правил — вертикальный, как карта 44:63 === */
 #rp103voice { height: 190px !important; }
 #rp103media { flex: 0 0 auto !important; min-height: 0 !important; width: 300px !important; aspect-ratio: 44 / 63 !important; margin: 0 auto !important; }
