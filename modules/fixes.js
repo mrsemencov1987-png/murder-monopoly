@@ -85,3 +85,21 @@ window.endTurn = async function () {
   return r;
 };
 console.log('🔧 fixes v207: пощада только у победителя + добор v206');
+// ============================================
+// ДОПОЛНЕНИЕ v207 — ПОЩАДА ТОЛЬКО У ПОБЕДИТЕЛЯ (били не в ту кнопку — теперь в ту)
+// ============================================
+const _sm207 = window.showModal;
+window.showModal = function (html, opts) {
+  let h = html || '';
+  if (/ВСТРЕЧА НА КЛЕТКЕ/.test(h) && /пощадить/i.test(h)) {
+    const pows = [...h.matchAll(/💪 (\d+)/g)].map(m => +m[1]);
+    const names = [...h.matchAll(/<h3[^>]*>([^<]+)<\/h3>/g)].map(m => m[1].trim());
+    const cur = window.S && S.players && S.players[S.cur] ? S.players[S.cur].name : '';
+    const winner = (pows.length === 2 && names.length === 2 && pows[0] !== pows[1]) ? (pows[0] > pows[1] ? names[0] : names[1]) : '';
+    if (winner && cur && winner !== cur) {
+      h = h.replace(/<button[^>]*data-v\s*=\s*"spare"[^>]*>[\s\S]{0,80}?<\/button>/, '<p style="opacity:.75;font-size:12px">🕊 Пощаду может предложить только победитель.</p>');
+    }
+  }
+  return _sm207(h, opts);
+};
+console.log('⚖️ fixes v207: пощада только у победителя (data-v=spare)');
