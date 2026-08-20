@@ -47,7 +47,13 @@ setInterval(() => {
   lastNight202 = night;
   if (pendingSkin202 && window.S && S.round >= pendingSkin202.until) {
     const m = S.players.find(x => x.role === 'murderer');
-    if (m) { m.skinId = pendingSkin202.skin; if (m.skin !== undefined) m.skin = pendingSkin202.skin; log('🧥 Внимательность: скин «' + pendingSkin202.skin + '» теперь у убийцы ' + m.name + '!'); }
+  if (m) {
+      m.skins = m.skins || [];
+      m.skins.push(pendingSkin202.skin);
+      const sk2 = (window.SKINS && SKINS[pendingSkin202.skin]) || {};
+      m.damage += sk2.damage || 0; m.defense += sk2.defense || 0;
+      log('🧥 Внимательность: скин «' + (SKINS[pendingSkin202.skin] ? SKINS[pendingSkin202.skin].name : pendingSkin202.skin) + '» теперь у убийцы ' + m.name + '!');
+    }
     pendingSkin202 = null;
     if (typeof updateUI === 'function') updateUI();
   }
