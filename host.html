@@ -107,6 +107,11 @@ if (room) {
     clients.forEach(function (c) { if (c.connected) c.publish('mm145_' + room + '_up', JSON.stringify({ type: 'hello', host: true, name: 'ВЕДУЩИЙ' })); });
   }, 10000);
 }
+  (async function () {
+  async function wake() { try { if (navigator.wakeLock) await navigator.wakeLock.request('screen'); } catch (e) {} }
+  wake();
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') wake(); });
+})();
 </script>
 </body>
 </html>
