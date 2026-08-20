@@ -18,9 +18,15 @@ function nightKill202() {
   const t = targets[Math.floor(Math.random() * targets.length)];
   if (!t) return;
   if (t.role === 'sheriff') {
-    const skin = t.skinId || t.skin;
-    if (skin) { pendingSkin202 = { skin: skin, until: S.round + 1 }; t.skinId = null; if (t.skin) t.skin = null; log('🌙 Ночь: убийца снял скин с шерифа ' + t.name + '! Через круг он всплывёт у убийцы — внимательность!'); }
-    else { log('🌙 Ночь: убийца навестил шерифа ' + t.name + ', но скина не нашёл.'); t.fear.add(1); }
+    if (t.skins && t.skins.length) {
+      const sid = t.skins.splice(Math.floor(Math.random() * t.skins.length), 1)[0];
+      const sk = (window.SKINS && SKINS[sid]) || {};
+      t.damage = Math.max(0, (t.damage || 0) - (sk.damage || 0));
+      t.defense = Math.max(0, (t.defense || 0) - (sk.defense || 0));
+      pendingSkin202 = { skin: sid, until: S.round + 1 };
+      log('🌙 Ночь: убийца снял скин «' + (sk.name || sid) + '» с шерифа ' + t.name + '! Через круг — внимательность!');
+    } else { log('🌙 Ночь: убийца навестил шерифа ' + t.name + ', но скина не нашёл.'); t.fear.add(1); }
+  }
   } else if (t.role === 'civilian') {
     const fm = (t.fear && t.fear.max) || 5;
     if (t.fear && t.fear.set) t.fear.set(fm); else if (t.fear) t.fear.add(5);
