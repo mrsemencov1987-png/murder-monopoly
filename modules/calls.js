@@ -73,6 +73,7 @@ setInterval(() => {
   if (Math.random() > 0.5) return;
   if (window.MM_HOST === 'human' && (!humans.length || Math.random() < 0.3)) { hostCall197(); return; }
   if (!humans.length) return;
+  if (window.MM_AUTO205) return; // звонками командует auto205
   const p = humans[Math.floor(Math.random() * humans.length)];
   const e = buildEntry197(p);
   pending197 = { name: p.name, entry: e };
