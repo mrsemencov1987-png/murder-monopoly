@@ -217,9 +217,7 @@ header, .header { position: relative; z-index: 30; display: flex !important; fle
 /* === v79: ЕДИНЫЙ ФАСАД КАРТ + ВИД ПОЛЯ === */
 .hcard { width: 120px; aspect-ratio: 44/63; perspective: 700px; cursor: pointer; transform: rotate(var(--rot, 0deg)); transition: transform .25s; margin-left: -16px; position: relative; }
 .hcard:first-child { margin-left: 0; }
-.hcard:hover { transform: rotate(var(--rot, 0deg)) translateY(-18px) scale(1.4); z-index: 10; }
 .hcard-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .8s cubic-bezier(.3,.8,.3,1); }
-.hcard:hover .hcard-inner { transform: rotateY(180deg); }
 .hcard-back, .hcard-front { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 8px; border: 2px solid var(--gold); overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,.6); }
 .hcard-back { background: #0d1226 center/cover no-repeat; display: flex; align-items: center; justify-content: center; font-size: 36px; }
 .back-mor { background-image: url('img/ui/moral-frame.png'); }
@@ -230,38 +228,33 @@ header, .header { position: relative; z-index: 30; display: flex !important; fle
 .hf-art img { width: 100%; height: 100%; object-fit: cover; }
 .hf-emo { font-size: 34px; }
 .hf-name { color: #ffd54f; font-weight: 900; font-size: 11px; text-align: center; margin: 4px 2px 2px; text-shadow: 0 0 8px rgba(212,175,55,.4); }
-.hf-txt { flex: 1; font-size: 8.5px; line-height: 1.3; color: #dfe6ff; text-align: center; padding: 0 4px 4px; overflow: hidden; }
 .hand-cnt { position: absolute; top: -8px; right: -8px; background: var(--gold); color: #14100a; font-size: 11px; font-weight: 900; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; z-index: 2; }
 .hand-empty { font-size: 11px; opacity: .5; }
 #board.tilt { transform: perspective(1200px) rotateX(8deg) !important; }
-/* === v81: ШИРОКИЙ БЛОК РУКИ + КАРТЫ ОДНОГО РАЗМЕРА, БЕЗ ОБРЕЗКИ === */
+/* === v81: ШИРОКИЙ БЛОК РУКИ === */
 .game-main { grid-template-columns: minmax(0,1fr) 700px 400px !important; }
 #freePanel { overflow-x: hidden; }
 .hand-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 10px; min-height: 150px; }
-.hcard { margin-left: 0 !important; width: 112px; }
-.hcard:hover { transform: rotate(0deg) translateY(-14px) scale(1.35); z-index: 10; }
 .hc-txt::-webkit-scrollbar { width: 4px; }
 .hc-txt::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 2px; }
-/* === v84: РОВНАЯ РУКА — НИЧЕГО НЕ ЗАГОРАЖИВАЕТ === */
+/* === v84: РОВНАЯ РУКА === */
 .hand-sec { margin: 16px 0 10px; position: relative; }
 .hand-title { display: block; margin-bottom: 10px; position: relative; z-index: 5; }
-.hand-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: flex-start; min-height: 160px; padding-top: 4px; }
-.hcard { margin-left: 0 !important; }
 .hcard:hover { transform: rotate(0deg) translateY(-10px) scale(1.25) !important; z-index: 10; }
 .hc-txt { font-size: 9px; }
-/* === v85: КОМПАКТНЫЕ БЛОКИ РУКИ — БЕЗ ПУСТОТ === */
+/* === v85: КОМПАКТНЫЕ БЛОКИ РУКИ === */
 #freePanel { flex: 0 0 auto !important; }
 .hand-sec { margin: 6px 0 10px !important; }
 .hand-title { margin-bottom: 6px !important; }
 .hand-row { min-height: 0 !important; padding: 6px 0 2px !important; }
-/* === v91: ДУЭЛЬ-ВИТРИНА ПРИ ВСТРЕЧЕ === */
+/* === v91: ДУЭЛЬ-ВИТРИНА === */
 .md-col { flex: 1 1 200px; max-width: 260px; background: rgba(13,18,38,.9); border: 2px solid; border-radius: 12px; padding: 10px; }
 .md-col h3 { margin-bottom: 6px; letter-spacing: 1px; }
 .md-skin { display: flex; justify-content: space-between; gap: 6px; font-size: 11px; padding: 3px 4px; border-bottom: 1px dashed rgba(212,175,55,.2); color: #dfe6ff; }
 .md-skin span:last-child { white-space: nowrap; color: #ffd54f; }
 .md-total { margin-top: 8px; font-size: 12px; font-weight: 800; color: #ffd54f; text-align: center; }
 .md-vs { align-self: center; font-size: 26px; font-weight: 900; color: #ff5252; text-shadow: 0 0 12px rgba(255,23,68,.6); }
-/* === v92: ВЕРДИКТ ДУЭЛИ + МЕТКА ВЛАДЕЛЬЦА КЛЕТКИ === */
+/* === v92: ВЕРДИКТ ДУЭЛИ + МЕТКА ВЛАДЕЛЬЦА === */
 .md-verdict { text-align: center; font-weight: 900; letter-spacing: 2px; font-size: 13px; margin: 4px 0 6px; }
 .md-verdict.win { color: #ffd54f; text-shadow: 0 0 12px rgba(255,213,79,.6); }
 .md-verdict.lose { color: #ff5252; text-shadow: 0 0 10px rgba(255,23,68,.5); }
@@ -285,11 +278,11 @@ header, .header { position: relative; z-index: 30; display: flex !important; fle
 .tt-head { color: var(--gold); font-weight: 900; font-size: 13px; margin-bottom: 6px; letter-spacing: 1px; }
 .tt-row { font-size: 11px; line-height: 1.45; color: #dfe6ff; margin-bottom: 4px; }
 .tt-row b { color: #ffd54f; }
-/* === v101: окно Голоса Улиц шире и подробнее === */
+/* === v101: окно Голоса Улиц шире === */
 #rulePopup { width: min(880px, 95vw) !important; }
 .rp-text { font-size: 15px !important; }
 .rp-media { min-height: 240px !important; }
-/* === v104: жетоны детектива под досье === */
+/* === v104: жетоны шерифа под досье === */
 #tokensPanel .tk-row { display: flex; gap: 12px; justify-content: center; align-items: center; padding: 8px 0 4px; }
 .tk-tok { font-size: 34px; transition: all .3s; }
 .tk-tok.on { filter: drop-shadow(0 0 10px rgba(212,175,55,.75)); }
@@ -298,14 +291,15 @@ header, .header { position: relative; z-index: 30; display: flex !important; fle
 .tk-hint { font-size: 10px; color: #68748f; text-align: center; }
 /* === v107: окно-призрак не перехватывает клики === */
 .rp103x { pointer-events: none !important; }
-/* === v117: медиа-слот окна правил — вертикальный, как карта 44:63 === */
+/* (v108: JS-блок ruleTts удалён из CSS — он живёт в game.js) */
+/* === v117: медиа-слот окна правил === */
 #rp103voice { height: 190px !important; }
 #rp103media { flex: 0 0 auto !important; min-height: 0 !important; width: 300px !important; aspect-ratio: 44 / 63 !important; margin: 0 auto !important; }
-/* === v119: медиа-слот во всю ширину колонки, как аватар === */
+/* === v119: медиа-слот во всю ширину === */
 #rp103media { width: 100% !important; margin: 0 !important; flex: 0 0 auto !important; min-height: 0 !important; aspect-ratio: 44 / 63 !important; }
 #rp103voice { height: 170px !important; }
 #rp103 > div { overflow-y: auto; }
-/* === v121: арт в слоте виден целиком, горизонтальный или вертикальный === */
+/* === v121: арт виден целиком === */
 #rp103media img, #rp103media video { object-fit: contain !important; background: #000; }
 /* === v138: QR-live минимальный монитор === */
 body.qrlive-min .right-panel, body.qrlive-min .left-panel,
