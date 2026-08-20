@@ -5,15 +5,11 @@
 let lastNight202 = false, pendingSkin202 = null;
 function isNight202() {
   if (!window.S) return false;
-  const keys = ['timeOfDay', 'time', 'dayTime', 'timeofday', 'phase'];
-  for (const k of keys) { if (S[k] && /ноч/i.test(S[k] + '')) return true; }
-  const els = document.querySelectorAll('#timeHeader, .time, #time, #roundInfo, header');
-  for (const el of els) { if (el && /ноч/i.test(el.textContent || '')) return true; }
+  if (S.timeOfDay === 'night') return true;
+  const el = document.getElementById('timeLabel');
+  if (el && /ноч/i.test(el.textContent || '')) return true;
   return false;
 }
-const st202 = document.createElement('style');
-st202.textContent = 'body.mm-night #gameScreen{filter:brightness(.5) saturate(.75) hue-rotate(190deg);transition:filter 2s}';
-document.head.appendChild(st202);
 function nightKill202() {
   if (!window.S || S.isOver) return;
   const killer = S.players.find(x => x.role === 'murderer');
